@@ -72,6 +72,70 @@ public class Cookie {
         System.out.println(SEPARATOR);
     }
 
+    /** Displays a friendly error without terminating the application. */
+    private static void showError(CookieException exception) {
+        System.out.println(SEPARATOR);
+        System.out.println("Bruh... " + exception.getMessage());
+        System.out.println(SEPARATOR);
+    }
+
+    /** Ensures that a command has no arguments after its command word. */
+    private static void requireNoArguments(String[] parts, String action) throws CookieException {
+        if (parts.length > 1) {
+            throw new CookieException("The " + action + " command does not take any arguments.");
+        }
+    }
+
+    /** Returns a task description, rejecting commands with no description. */
+    private static String requireDescription(String description, String action) throws CookieException {
+        if (description.isBlank()) {
+            throw new CookieException("A " + action + " task needs a description.");
+        }
+        return description;
+    }
+
+    /** Converts a one-based task number into a zero-based list index. */
+    private static int parseTaskIndex(String[] parts, String action) throws CookieException {
+        if (parts.length != 2) {
+            throw new CookieException("Usage: " + action + " <task number>.");
+        }
+
+        int taskNumber;
+        try {
+            taskNumber = Integer.parseInt(parts[1]);
+        } catch (NumberFormatException exception) {
+            throw new CookieException("The task number must be a positive whole number.");
+        }
+
+        if (taskNumber < 1 || taskNumber > LST.size()) {
+            throw new CookieException("There is no task numbered " + taskNumber + ".");
+        }
+        return taskNumber - 1;
+    }
+
+    /** Adds a deadline after validating its description and deadline marker. */
+    private static void addDeadline(String description) throws CookieException {
+        String[] deadlineParts = description.split("\\s+/by\\s+", 2);
+        if (deadlineParts.length < 2 || deadlineParts[0].isBlank() || deadlineParts[1].isBlank()) {
+            throw new CookieException("A deadline needs a description and a date after /by.");
+        }
+        addTask(new Deadline(deadlineParts[0], deadlineParts[1]));
+    }
+
+    /** Adds an event after validating its description and both time markers. */
+    private static void addEvent(String description) throws CookieException {
+        String[] eventParts = description.split("\\s+/from\\s+", 2);
+        if (eventParts.length < 2 || eventParts[0].isBlank()) {
+            throw new CookieException("An event needs a description, a start time after /from, and an end time after /to.");
+        }
+
+        String[] timeParts = eventParts[1].split("\\s+/to\\s+", 2);
+        if (timeParts.length < 2 || timeParts[0].isBlank() || timeParts[1].isBlank()) {
+            throw new CookieException("An event needs a description, a start time after /from, and an end time after /to.");
+        }
+        addTask(new Event(eventParts[0], timeParts[0], timeParts[1]));
+    }
+
     /** Reads and responds to commands until the user enters {@code bye}. */
     public static void main(String[] args) {
         greet();
@@ -79,42 +143,44 @@ public class Cookie {
         Scanner scanner = new Scanner(System.in);
         while (scanner.hasNextLine()) {
             String input = scanner.nextLine().trim();
-            String[] parts = input.split("\\s+");
-            String action = parts[0];
-            String description = input.substring(action.length()).trim();
+            try {
+                if (input.isBlank()) {
+                    throw new CookieException("I couldn't understand an empty command.");
+                }
 
-            if (input.equals("bye")) {
-                exit();
-                break;
-            }
+                String[] parts = input.split("\\s+");
+                String action = parts[0];
+                String description = input.substring(action.length()).trim();
 
-            if (input.equals("list")) {
-                list();
-            }
-
-            if (action.equals("mark")) {
-                int idx = Integer.parseInt(parts[1]) - 1;
-                markTask(idx);
-            }
-
-            if (action.equals("unmark")) {
-                int idx = Integer.parseInt(parts[1]) - 1;
-                unmarkTask(idx);
-            }
-
-            if (action.equals("todo")) {
-                addTask(new Todo(description));
-            }
-
-            if (action.equals("deadline")) {
-                String[] deadlineParts = description.split("\\s+/by\\s+", 2);
-                addTask(new Deadline(deadlineParts[0], deadlineParts[1]));
-            }
-
-            if (action.equals("event")) {
-                String[] eventParts = description.split("\\s+/from\\s+", 2);
-                String[] timeParts = eventParts[1].split("\\s+/to\\s+", 2);
-                addTask(new Event(eventParts[0], timeParts[0], timeParts[1]));
+                switch (action) {
+                case "bye":
+                    requireNoArguments(parts, action);
+                    exit();
+                    return;
+                case "list":
+                    requireNoArguments(parts, action);
+                    list();
+                    break;
+                case "mark":
+                    markTask(parseTaskIndex(parts, action));
+                    break;
+                case "unmark":
+                    unmarkTask(parseTaskIndex(parts, action));
+                    break;
+                case "todo":
+                    addTask(new Todo(requireDescription(description, action)));
+                    break;
+                case "deadline":
+                    addDeadline(description);
+                    break;
+                case "event":
+                    addEvent(description);
+                    break;
+                default:
+                    throw new CookieException("What is that command!?.");
+                }
+            } catch (CookieException exception) {
+                showError(exception);
             }
         }
     }
