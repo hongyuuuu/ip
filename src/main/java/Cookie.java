@@ -105,6 +105,11 @@ public class Cookie {
             if (action.equals("todo")) {
                 addTask(new Todo(description));
             }
+
+            if (action.equals("deadline")) {
+                String[] deadlineParts = description.split("\\s+/by\\s+", 2);
+                addTask(new Deadline(deadlineParts[0], deadlineParts[1]));
+            }
         }
     }
 }
