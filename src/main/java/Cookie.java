@@ -163,35 +163,35 @@ public class Cookie {
                 String action = parts[0];
                 String description = input.substring(action.length()).trim();
 
-                switch (action) {
-                case "bye":
-                    requireNoArguments(parts, action);
-                    exit();
-                    return;
-                case "list":
-                    requireNoArguments(parts, action);
-                    list();
-                    break;
-                case "mark":
-                    markTask(parseTaskIndex(parts, action));
-                    break;
-                case "unmark":
-                    unmarkTask(parseTaskIndex(parts, action));
-                    break;
-                case "delete":
-                    deleteTask(parseTaskIndex(parts, action));
-                    break;
-                case "todo":
-                    addTask(new Todo(requireDescription(description, action)));
-                    break;
-                case "deadline":
-                    addDeadline(description);
-                    break;
-                case "event":
-                    addEvent(description);
-                    break;
-                default:
-                    throw new CookieException("What is that command!?.");
+                Command command = Command.fromString(action);
+                switch (command) {
+                    case BYE -> {
+                        requireNoArguments(parts, action);
+                        exit();
+                        return;
+                    }
+                    case LIST -> {
+                        requireNoArguments(parts, action);
+                        list();
+                    }
+                    case MARK -> {
+                        markTask(parseTaskIndex(parts, action));
+                    }
+                    case UNMARK -> {
+                        unmarkTask(parseTaskIndex(parts, action));
+                    }
+                    case DELETE -> {
+                        deleteTask(parseTaskIndex(parts, action));
+                    }
+                    case TODO -> {
+                        addTask(new Todo(requireDescription(description, action)));
+                    }
+                    case DEADLINE -> {
+                        addDeadline(description);
+                    }
+                    case EVENT -> {
+                        addEvent(description);
+                    }
                 }
             } catch (CookieException exception) {
                 showError(exception);
