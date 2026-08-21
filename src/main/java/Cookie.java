@@ -37,14 +37,14 @@ public class Cookie {
         System.out.println(SEPARATOR);
         System.out.println("Ok. I've added this task:");
         System.out.println("   " + task);
-        System.out.println("You have " + LST.size() + " tasks now. Better start working.");
+        System.out.println("You have " + LST.size() + " task(s) now. Better start working.");
         System.out.println(SEPARATOR);
     }
 
     /** Displays the list of items added by users when users enter {@code list} */
     private static void list() {
         System.out.println(SEPARATOR);
-        System.out.println("Here are the tasks in your list:");
+        System.out.println("Here are the task(s) in your list:");
         for (int i = 0; i < LST.size(); i++) {
             Task task = LST.get(i);
             System.out.println(i+1 + ". " + task);
@@ -69,6 +69,17 @@ public class Cookie {
         System.out.println(SEPARATOR);
         System.out.println("I can't believe you lied to me...");
         System.out.println("   " + task);
+        System.out.println(SEPARATOR);
+    }
+
+    /** Deletes the selected task and reports the removed task and remaining task count. */
+    private static void deleteTask(int idx) {
+        Task task = LST.get(idx);
+        LST.remove(idx);
+        System.out.println(SEPARATOR);
+        System.out.println("You're welcome. I've gotten rid of this task for you:");
+        System.out.println("   " + task);
+        System.out.println("Now you have " + LST.size() + " task(s) in the list.");
         System.out.println(SEPARATOR);
     }
 
@@ -166,6 +177,9 @@ public class Cookie {
                     break;
                 case "unmark":
                     unmarkTask(parseTaskIndex(parts, action));
+                    break;
+                case "delete":
+                    deleteTask(parseTaskIndex(parts, action));
                     break;
                 case "todo":
                     addTask(new Todo(requireDescription(description, action)));
