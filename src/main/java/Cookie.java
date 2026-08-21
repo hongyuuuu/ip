@@ -32,11 +32,12 @@ public class Cookie {
     }
 
     /** Stores user input and prints the message indicating a successful addition */
-    private static void add(String item) {
-        Task task = new Task(item);
+    private static void addTask(Task task) {
         LST.add(task);
         System.out.println(SEPARATOR);
-        System.out.println("Added: " + item);
+        System.out.println("Ok. I've added this task:");
+        System.out.println("   " + task);
+        System.out.println("You have " + LST.size() + " tasks now. Better start working.");
         System.out.println(SEPARATOR);
     }
 
@@ -46,7 +47,7 @@ public class Cookie {
         System.out.println("Here are the tasks in your list:");
         for (int i = 0; i < LST.size(); i++) {
             Task task = LST.get(i);
-            System.out.println(i+1 + ". " + task.getCheckbox() + " " + task.getDescription());
+            System.out.println(i+1 + ". " + task);
         }
         System.out.println(SEPARATOR);
     }
@@ -57,7 +58,7 @@ public class Cookie {
         task.mark();
         System.out.println(SEPARATOR);
         System.out.println("Wow you actually got work done...");
-        System.out.println("   " + task.getCheckbox() + " " + task.getDescription());
+        System.out.println("   " + task);
         System.out.println(SEPARATOR);
     }
 
@@ -67,7 +68,7 @@ public class Cookie {
         task.unmark();
         System.out.println(SEPARATOR);
         System.out.println("I can't believe you lied to me...");
-        System.out.println("   " + task.getCheckbox() + " " + task.getDescription());
+        System.out.println("   " + task);
         System.out.println(SEPARATOR);
     }
 
@@ -77,33 +78,33 @@ public class Cookie {
 
         Scanner scanner = new Scanner(System.in);
         while (scanner.hasNextLine()) {
-            String command = scanner.nextLine();
-            String[] parts = command.trim().split("\\s+");
+            String input = scanner.nextLine().trim();
+            String[] parts = input.split("\\s+");
             String action = parts[0];
+            String description = input.substring(action.length()).trim();
 
-            if (command.equals("bye")) {
+            if (input.equals("bye")) {
                 exit();
                 break;
             }
 
-            if (command.equals("list")) {
+            if (input.equals("list")) {
                 list();
-                continue;
             }
 
             if (action.equals("mark")) {
                 int idx = Integer.parseInt(parts[1]) - 1;
                 markTask(idx);
-                continue;
             }
 
             if (action.equals("unmark")) {
                 int idx = Integer.parseInt(parts[1]) - 1;
                 unmarkTask(idx);
-                continue;
             }
 
-            add(command);
+            if (action.equals("todo")) {
+                addTask(new Todo(description));
+            }
         }
     }
 }

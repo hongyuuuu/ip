@@ -30,15 +30,15 @@ Bye. I'm going to sleep.
 ____________________________________________________________
 ```
 
-## Test case 2: Add a task
+## Test case 2: Add a todo task
 
-**Aim:** Verify that a plain-text command creates an incomplete task and confirms the addition.
+**Aim:** Verify that a `todo` command creates an incomplete todo task and confirms the addition.
 
 **Command:** `java "-Dfile.encoding=UTF-8" "-Dstdout.encoding=UTF-8" -cp out Cookie`
 
 **Inputs:**
 ```text
-buy milk
+todo buy milk
 bye
 ```
 
@@ -55,7 +55,9 @@ Hello! I'm your favourite chatbot Cookie.
 What do you need today?
 ____________________________________________________________
 ____________________________________________________________
-Added: buy milk
+Ok. I've added this task:
+   [T][ ] buy milk
+You have 1 tasks now. Better start working.
 ____________________________________________________________
 ____________________________________________________________
 Bye. I'm going to sleep.
@@ -70,7 +72,7 @@ ____________________________________________________________
 
 **Inputs:**
 ```text
-buy milk
+todo buy milk
 list
 bye
 ```
@@ -88,11 +90,13 @@ Hello! I'm your favourite chatbot Cookie.
 What do you need today?
 ____________________________________________________________
 ____________________________________________________________
-Added: buy milk
+Ok. I've added this task:
+   [T][ ] buy milk
+You have 1 tasks now. Better start working.
 ____________________________________________________________
 ____________________________________________________________
 Here are the tasks in your list:
-1. [ ] buy milk
+1. [T][ ] buy milk
 ____________________________________________________________
 ____________________________________________________________
 Bye. I'm going to sleep.
@@ -107,7 +111,7 @@ ____________________________________________________________
 
 **Inputs:**
 ```text
-finish report
+todo finish report
 mark 1
 list
 bye
@@ -126,15 +130,17 @@ Hello! I'm your favourite chatbot Cookie.
 What do you need today?
 ____________________________________________________________
 ____________________________________________________________
-Added: finish report
+Ok. I've added this task:
+   [T][ ] finish report
+You have 1 tasks now. Better start working.
 ____________________________________________________________
 ____________________________________________________________
 Wow you actually got work done...
-   [X] finish report
+   [T][X] finish report
 ____________________________________________________________
 ____________________________________________________________
 Here are the tasks in your list:
-1. [X] finish report
+1. [T][X] finish report
 ____________________________________________________________
 ____________________________________________________________
 Bye. I'm going to sleep.
@@ -149,7 +155,7 @@ ____________________________________________________________
 
 **Inputs:**
 ```text
-finish report
+todo finish report
 mark 1
 unmark 1
 list
@@ -169,19 +175,21 @@ Hello! I'm your favourite chatbot Cookie.
 What do you need today?
 ____________________________________________________________
 ____________________________________________________________
-Added: finish report
+Ok. I've added this task:
+   [T][ ] finish report
+You have 1 tasks now. Better start working.
 ____________________________________________________________
 ____________________________________________________________
 Wow you actually got work done...
-   [X] finish report
+   [T][X] finish report
 ____________________________________________________________
 ____________________________________________________________
 I can't believe you lied to me...
-   [ ] finish report
+   [T][ ] finish report
 ____________________________________________________________
 ____________________________________________________________
 Here are the tasks in your list:
-1. [ ] finish report
+1. [T][ ] finish report
 ____________________________________________________________
 ____________________________________________________________
 Bye. I'm going to sleep.
