@@ -110,6 +110,12 @@ public class Cookie {
                 String[] deadlineParts = description.split("\\s+/by\\s+", 2);
                 addTask(new Deadline(deadlineParts[0], deadlineParts[1]));
             }
+
+            if (action.equals("event")) {
+                String[] eventParts = description.split("\\s+/from\\s+", 2);
+                String[] timeParts = eventParts[1].split("\\s+/to\\s+", 2);
+                addTask(new Event(eventParts[0], timeParts[0], timeParts[1]));
+            }
         }
     }
 }

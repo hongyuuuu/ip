@@ -229,3 +229,37 @@ ____________________________________________________________
 Bye. I'm going to sleep.
 ____________________________________________________________
 ```
+
+## Test case 7: Add an event task
+
+**Aim:** Verify that an `event` command separates the task description from its `/from` and `/to` times and displays all three values.
+
+**Command:** `java "-Dfile.encoding=UTF-8" "-Dstdout.encoding=UTF-8" -cp out Cookie`
+
+**Inputs:**
+```text
+event project meeting /from Mon 2pm /to 4pm
+bye
+```
+
+**Expected output:**
+```text
+____________________________________________________________
+ ██████╗ ██████╗  ██████╗ ██╗  ██╗██╗███████╗
+██╔════╝██╔═══██╗██╔═══██╗██║ ██╔╝██║██╔════╝
+██║     ██║   ██║██║   ██║█████╔╝ ██║█████╗  
+██║     ██║   ██║██║   ██║██╔═██╗ ██║██╔══╝  
+╚██████╗╚██████╔╝╚██████╔╝██║  ██╗██║███████╗
+ ╚═════╝ ╚═════╝  ╚═════╝ ╚═╝  ╚═╝╚═╝╚══════╝
+Hello! I'm your favourite chatbot Cookie.
+What do you need today?
+____________________________________________________________
+____________________________________________________________
+Ok. I've added this task:
+   [E][ ] project meeting (from: Mon 2pm to: 4pm)
+You have 1 tasks now. Better start working.
+____________________________________________________________
+____________________________________________________________
+Bye. I'm going to sleep.
+____________________________________________________________
+```
