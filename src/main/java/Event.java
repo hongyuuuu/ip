@@ -14,6 +14,13 @@ public class Event extends Task {
         this.end = end;
     }
 
+    /** Returns the string for {@code Event} tasks to be logged */
+    @Override
+    public String toFileFormat() {
+        return "E | " + (this.isDone ? "Done | " : "Not Done | ") + this.description
+                + " | " + this.start + " to " + this.end;
+    }
+
     @Override
     public String toString() {
         return "[E]" + super.toString() + " (from: " + start + " to: " + end + ")";

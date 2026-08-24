@@ -10,6 +10,13 @@ public class Deadline extends Task {
         this.by = by;
     }
 
+    /** Returns the string for {@code Deadline} tasks to be logged */
+    @Override
+    public String toFileFormat() {
+        return "D | " + (this.isDone ? "Done | " : "Not Done | ") + this.description
+                + " | " + this.by;
+    }
+
     @Override
     public String toString() {
         return "[D]" + super.toString() + " (by: " + by + ")";

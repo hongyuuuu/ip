@@ -6,6 +6,12 @@ public class Todo extends Task {
         super(description);
     }
 
+    /** Returns the string for {@code Todo} tasks to be logged */
+    @Override
+    public String toFileFormat() {
+        return "T | " + (this.isDone ? "Done | " : "Not Done | ") + this.description;
+    }
+
     @Override
     public String toString() {
         return "[T]" + super.toString();

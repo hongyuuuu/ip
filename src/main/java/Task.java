@@ -1,5 +1,5 @@
-/** Represents a task with a description and completion status */
-public class Task {
+/** Serves as a template for more specific task types */
+public abstract class Task {
     /** The task description */
     protected String description;
 
@@ -31,6 +31,9 @@ public class Task {
     public void unmark() {
         this.isDone = false;
     }
+
+    /** Returns the formatted string representation for file storage. */
+    public abstract String toFileFormat();
 
     @Override
     public String toString() {
