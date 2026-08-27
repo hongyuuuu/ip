@@ -1,504 +1,174 @@
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
-import java.time.format.ResolverStyle;
-import java.util.ArrayList;
-import java.util.Locale;
-import java.util.Scanner;
-
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.IOException;
-
-import java.nio.charset.StandardCharsets;
-import java.nio.file.AtomicMoveNotSupportedException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
+import java.time.LocalDate;
+import java.util.Scanner;
 
 /** The main entry point for the Cookie command-line application. */
 public class Cookie {
-    private static final String SEPARATOR = "____________________________________________________________";
-    private static final ArrayList<Task> LST = new ArrayList<>(100);
-    private static final Path FILE_PATH = Paths.get(".", "data", "cookie.txt");
-    private static final DateTimeFormatter ISO_DATE_TIME_INPUT_FORMAT =
-            DateTimeFormatter.ofPattern("uuuu-MM-dd HHmm", Locale.ENGLISH)
-                    .withResolverStyle(ResolverStyle.STRICT);
-    private static final DateTimeFormatter SLASH_DATE_TIME_INPUT_FORMAT =
-            DateTimeFormatter.ofPattern("d/M/uuuu HHmm", Locale.ENGLISH)
-                    .withResolverStyle(ResolverStyle.STRICT);
-    private static final DateTimeFormatter ISO_DATE_INPUT_FORMAT =
-            DateTimeFormatter.ofPattern("uuuu-MM-dd", Locale.ENGLISH)
-                    .withResolverStyle(ResolverStyle.STRICT);
-    private static final DateTimeFormatter SLASH_DATE_INPUT_FORMAT =
-            DateTimeFormatter.ofPattern("d/M/uuuu", Locale.ENGLISH)
-                    .withResolverStyle(ResolverStyle.STRICT);
-    private static final DateTimeFormatter TIME_INPUT_FORMAT =
-            DateTimeFormatter.ofPattern("HHmm", Locale.ENGLISH)
-                    .withResolverStyle(ResolverStyle.STRICT);
-    private static final DateTimeFormatter DISPLAY_DATE_FORMAT =
-            DateTimeFormatter.ofPattern("MMM dd yyyy", Locale.ENGLISH);
+    /** The tasks currently managed by this Cookie instance. */
+    private final TaskList tasks;
 
-    /** Displays Cookie's greeting and the prompt for the first command. */
-    private static void greet() {
-        String banner =
-                  " ██████╗ ██████╗  ██████╗ ██╗  ██╗██╗███████╗\n"
-                + "██╔════╝██╔═══██╗██╔═══██╗██║ ██╔╝██║██╔════╝\n"
-                + "██║     ██║   ██║██║   ██║█████╔╝ ██║█████╗  \n"
-                + "██║     ██║   ██║██║   ██║██╔═██╗ ██║██╔══╝  \n"
-                + "╚██████╗╚██████╔╝╚██████╔╝██║  ██╗██║███████╗\n"
-                + " ╚═════╝ ╚═════╝  ╚═════╝ ╚═╝  ╚═╝╚═╝╚══════╝";
+    /** Handles user-facing messages for this Cookie instance. */
+    private final Ui ui;
 
-        System.out.println(SEPARATOR);
-        System.out.println(banner);
-        System.out.println("Hello! I'm your favourite chatbot Cookie.");
-        System.out.println("What do you need today?");
-        System.out.println(SEPARATOR);
-    }
+    /** Handles persistence for this Cookie instance. */
+    private final Storage storage;
 
-    /** Prints the message shown when the user ends the conversation. */
-    private static void exit() {
-        System.out.println(SEPARATOR);
-        System.out.println("Bye. I'm going to sleep.");
-        System.out.println(SEPARATOR);
+    /** Interprets commands entered by the user. */
+    private final Parser parser;
+
+    /** Creates Cookie with a task file at the specified path. */
+    public Cookie(String filePath) {
+        this.ui = new Ui();
+        this.storage = new Storage(filePath);
+        this.parser = new Parser();
+        TaskList loadedTasks;
+        try {
+            loadedTasks = storage.load();
+        } catch (IOException exception) {
+            ui.showLoadError(exception.getMessage());
+            loadedTasks = new TaskList();
+        }
+        this.tasks = loadedTasks;
     }
 
     /** Stores user input and prints the message indicating a successful addition */
-    private static void addTask(Task task) {
-        LST.add(task);
+    private void addTask(Task task) {
+        tasks.add(task);
         if (!saveTasks()) {
-            LST.remove(LST.size() - 1);
+            tasks.delete(tasks.size() - 1);
             return;
         }
-        System.out.println(SEPARATOR);
-        System.out.println("Ok. I've added this task:");
-        System.out.println("   " + task);
-        System.out.println("You have " + LST.size() + " task(s) now. Better start working.");
-        System.out.println(SEPARATOR);
+        ui.showTaskAdded(task, tasks.size());
     }
 
     /** Displays the list of items added by users when users enter {@code list} */
-    private static void list() {
-        System.out.println(SEPARATOR);
-        System.out.println("Here are the task(s) in your list:");
-        for (int i = 0; i < LST.size(); i++) {
-            Task task = LST.get(i);
-            System.out.println(i+1 + ". " + task);
-        }
-        System.out.println(SEPARATOR);
+    private void list() {
+        ui.showTaskList(tasks);
     }
 
     /** Marks task as done and prints message indicating a successful mark as done */
-    private static void markTask(int idx) {
-        Task task = LST.get(idx);
+    private void markTask(int idx) {
+        Task task = tasks.get(idx);
         boolean wasDone = task.isDone;
-        task.mark();
+        tasks.mark(idx);
         if (!saveTasks()) {
             if (wasDone) {
-                task.mark();
+                tasks.mark(idx);
             } else {
-                task.unmark();
+                tasks.unmark(idx);
             }
             return;
         }
-        System.out.println(SEPARATOR);
-        System.out.println("Wow you actually got work done...");
-        System.out.println("   " + task);
-        System.out.println(SEPARATOR);
+        ui.showTaskMarked(task);
     }
 
     /** Unmarks task as done and prints message indicating a successful unmark as done */
-    private static void unmarkTask(int idx) {
-        Task task = LST.get(idx);
+    private void unmarkTask(int idx) {
+        Task task = tasks.get(idx);
         boolean wasDone = task.isDone;
-        task.unmark();
+        tasks.unmark(idx);
         if (!saveTasks()) {
             if (wasDone) {
-                task.mark();
+                tasks.mark(idx);
             } else {
-                task.unmark();
+                tasks.unmark(idx);
             }
             return;
         }
-        System.out.println(SEPARATOR);
-        System.out.println("I can't believe you lied to me...");
-        System.out.println("   " + task);
-        System.out.println(SEPARATOR);
+        ui.showTaskUnmarked(task);
     }
 
     /** Deletes the selected task and reports the removed task and remaining task count. */
-    private static void deleteTask(int idx) {
-        Task task = LST.get(idx);
-        LST.remove(idx);
+    private void deleteTask(int idx) {
+        Task task = tasks.get(idx);
+        tasks.delete(idx);
         if (!saveTasks()) {
-            LST.add(idx, task);
+            tasks.add(idx, task);
             return;
         }
-        System.out.println(SEPARATOR);
-        System.out.println("You're welcome. I've gotten rid of this task for you:");
-        System.out.println("   " + task);
-        System.out.println("Now you have " + LST.size() + " task(s) in the list.");
-        System.out.println(SEPARATOR);
+        ui.showTaskDeleted(task, tasks.size());
     }
 
-    /** Displays a friendly error without terminating the application. */
-    private static void showError(CookieException exception) {
-        System.out.println(SEPARATOR);
-        System.out.println("Bruh... " + exception.getMessage());
-        System.out.println(SEPARATOR);
+    /** Adds a deadline after the parser validates its description and date or time. */
+    private void addDeadline(String description) throws CookieException {
+        Parser.ParsedDeadline parsedDeadline = parser.parseDeadline(description);
+        addTask(new Deadline(parsedDeadline.description(), parsedDeadline.dateTime()));
     }
 
-    /** Ensures that a command has no arguments after its command word. */
-    private static void requireNoArguments(String[] parts, String action) throws CookieException {
-        if (parts.length > 1) {
-            throw new CookieException("The " + action + " command does not take any arguments.");
-        }
-    }
-
-    /** Returns a task description, rejecting commands with no description. */
-    private static String requireDescription(String description, String action) throws CookieException {
-        if (description.isBlank()) {
-            throw new CookieException("A " + action + " task needs a description.");
-        }
-        return description;
-    }
-
-    /** Rejects a value that would make the task file format ambiguous. */
-    private static String requireFileSafe(String value) throws CookieException {
-        if (value.contains("|")) {
-            throw new CookieException("Task details cannot contain '|'.");
-        }
-        return value;
-    }
-
-    /** Converts a one-based task number into a zero-based list index. */
-    private static int parseTaskIndex(String[] parts, String action) throws CookieException {
-        if (parts.length != 2) {
-            throw new CookieException("Usage: " + action + " <task number>.");
-        }
-
-        int taskNumber;
-        try {
-            taskNumber = Integer.parseInt(parts[1]);
-        } catch (NumberFormatException exception) {
-            throw new CookieException("The task number must be a positive whole number.");
-        }
-
-        if (taskNumber < 1 || taskNumber > LST.size()) {
-            throw new CookieException("There is no task numbered " + taskNumber + ".");
-        }
-        return taskNumber - 1;
-    }
-
-    /** Parses a user-provided date, time, or date-time using supported formats. */
-    private static DateTimeValue parseDateTime(String value) throws CookieException {
-        String normalizedValue = value.trim().replaceAll("\\s+", " ");
-        DateTimeFormatter[] formats = {
-            ISO_DATE_TIME_INPUT_FORMAT,
-            SLASH_DATE_TIME_INPUT_FORMAT
-        };
-
-        for (DateTimeFormatter format : formats) {
-            try {
-                LocalDateTime dateTime = LocalDateTime.parse(normalizedValue, format);
-                return new DateTimeValue(dateTime.toLocalDate(), dateTime.toLocalTime());
-            } catch (DateTimeParseException exception) {
-                // Try the next supported format.
-            }
-        }
-
-        try {
-            return new DateTimeValue(parseDate(normalizedValue), null);
-        } catch (CookieException exception) {
-            // Try the supported time-only format.
-        }
-
-        try {
-            return new DateTimeValue(null, LocalTime.parse(normalizedValue, TIME_INPUT_FORMAT));
-        } catch (DateTimeParseException exception) {
-            throw new CookieException(
-                    "A date, time, or date and time must use yyyy-MM-dd, d/M/yyyy, HHmm, "
-                            + "yyyy-MM-dd HHmm, or d/M/yyyy HHmm.");
-        }
-    }
-
-    /** Parses a user-provided date using one of the supported date formats. */
-    private static LocalDate parseDate(String value) throws CookieException {
-        String normalizedValue = value.trim().replaceAll("\\s+", " ");
-        DateTimeFormatter[] formats = {
-            ISO_DATE_INPUT_FORMAT,
-            SLASH_DATE_INPUT_FORMAT
-        };
-
-        for (DateTimeFormatter format : formats) {
-            try {
-                return LocalDate.parse(normalizedValue, format);
-            } catch (DateTimeParseException exception) {
-                // Try the next supported format.
-            }
-        }
-        throw new CookieException("A date must use yyyy-MM-dd or d/M/yyyy.");
-    }
-
-    /** Adds a deadline after validating its description, marker, and date or time. */
-    private static void addDeadline(String description) throws CookieException {
-        String[] deadlineParts = description.split("\\s+/by\\s+", 2);
-        if (deadlineParts.length < 2 || deadlineParts[0].isBlank() || deadlineParts[1].isBlank()) {
-            throw new CookieException("A deadline needs a description and a date and time after /by.");
-        }
-        String deadlineValue = requireFileSafe(deadlineParts[1]);
-        DateTimeValue deadlineDateTime;
-        try {
-            deadlineDateTime = parseDateTime(deadlineValue);
-        } catch (CookieException exception) {
-            throw new CookieException(
-                    "A deadline date, time, or date and time must use yyyy-MM-dd, d/M/yyyy, "
-                            + "HHmm, yyyy-MM-dd HHmm, or d/M/yyyy HHmm.");
-        }
-        addTask(new Deadline(requireFileSafe(deadlineParts[0]), deadlineDateTime));
-    }
-
-    /** Adds an event after validating its description and both date or time markers. */
-    private static void addEvent(String description) throws CookieException {
-        String[] eventParts = description.split("\\s+/from\\s+", 2);
-        if (eventParts.length < 2 || eventParts[0].isBlank()) {
-            throw new CookieException("An event needs a description, a start time after /from, and an end time after /to.");
-        }
-
-        String[] timeParts = eventParts[1].split("\\s+/to\\s+", 2);
-        if (timeParts.length < 2 || timeParts[0].isBlank() || timeParts[1].isBlank()) {
-            throw new CookieException("An event needs a description, a start time after /from, and an end time after /to.");
-        }
-        String eventDescription = requireFileSafe(eventParts[0]);
-        String startValue = requireFileSafe(timeParts[0]);
-        String endValue = requireFileSafe(timeParts[1]);
-        DateTimeValue start;
-        DateTimeValue end;
-        try {
-            start = parseDateTime(startValue);
-            end = parseDateTime(endValue);
-        } catch (CookieException exception) {
-            throw new CookieException(
-                    "An event's start and end values must use yyyy-MM-dd, d/M/yyyy, HHmm, "
-                            + "yyyy-MM-dd HHmm, or d/M/yyyy HHmm.");
-        }
-        addTask(new Event(eventDescription, start, end));
-    }
-
-    /** Returns whether an event has a date range that includes the requested date. */
-    private static boolean occursOnDate(Event event, LocalDate date) {
-        LocalDate startDate = event.getStart().getDate();
-        LocalDate endDate = event.getEnd().getDate();
-        if (startDate == null && endDate == null) {
-            return false;
-        }
-        if (startDate == null) {
-            startDate = endDate;
-        }
-        if (endDate == null) {
-            endDate = startDate;
-        }
-        return !date.isBefore(startDate) && !date.isAfter(endDate);
+    /** Adds an event after the parser validates its description and temporal values. */
+    private void addEvent(String description) throws CookieException {
+        Parser.ParsedEvent parsedEvent = parser.parseEvent(description);
+        addTask(new Event(parsedEvent.description(), parsedEvent.start(), parsedEvent.end()));
     }
 
     /** Displays deadlines and events that occur on the requested calendar date. */
-    private static void listOnDate(String value) throws CookieException {
-        LocalDate date = parseDate(value);
-
-        System.out.println(SEPARATOR);
-        System.out.println("Here are the task(s) on " + date.format(DISPLAY_DATE_FORMAT) + ":");
-        for (int i = 0; i < LST.size(); i++) {
-            Task task = LST.get(i);
-            boolean occursOnDate = false;
-            if (task instanceof Deadline deadline) {
-                occursOnDate = date.equals(deadline.getBy().getDate());
-            } else if (task instanceof Event event) {
-                occursOnDate = occursOnDate(event, date);
-            }
-
-            if (occursOnDate) {
-                System.out.println(i + 1 + ". " + task);
-            }
-        }
-        System.out.println(SEPARATOR);
+    private void listOnDate(String value) throws CookieException {
+        LocalDate date = parser.parseDate(value);
+        ui.showTasksOnDate(date, tasks);
     }
 
-    /** Saves the current task list to the hard disk and reports whether it succeeded. */
-    private static boolean saveTasks() {
-        Path temporaryFile = null;
+    /** Saves the current task list to the data file and reports whether it succeeded. */
+    private boolean saveTasks() {
         try {
-            Path parentDir = FILE_PATH.getParent();
-            if (parentDir != null) {
-                Files.createDirectories(parentDir);
-            }
-
-            temporaryFile = parentDir == null
-                    ? Files.createTempFile("cookie-", ".tmp")
-                    : Files.createTempFile(parentDir, ".cookie-", ".tmp");
-            try (BufferedWriter writer = Files.newBufferedWriter(temporaryFile, StandardCharsets.UTF_8)) {
-                for (Task task : LST) {
-                    writer.write(task.toFileFormat());
-                    writer.newLine();
-                }
-            }
-            try {
-                Files.move(temporaryFile, FILE_PATH, StandardCopyOption.ATOMIC_MOVE,
-                        StandardCopyOption.REPLACE_EXISTING);
-            } catch (AtomicMoveNotSupportedException exception) {
-                Files.move(temporaryFile, FILE_PATH, StandardCopyOption.REPLACE_EXISTING);
-            }
+            storage.save(tasks);
             return true;
-        } catch (IOException e) {
-            if (temporaryFile != null) {
-                try {
-                    Files.deleteIfExists(temporaryFile);
-                } catch (IOException ignored) {
-                    // Preserve the original save error for the user.
-                }
-            }
-            System.out.println(SEPARATOR);
-            System.out.println("Oh no! I couldn't save your tasks: " + e.getMessage());
-            System.out.println(SEPARATOR);
+        } catch (IOException exception) {
+            ui.showSaveError(exception.getMessage());
             return false;
         }
     }
 
-    /** Loads valid task records from the hard-disk file when Cookie starts. */
-    private static void loadTasks() {
-        if (!Files.exists(FILE_PATH)) {
-            return;
-        }
-
-        try (BufferedReader reader = Files.newBufferedReader(FILE_PATH, StandardCharsets.UTF_8)) {
-            String line;
-            while ((line = reader.readLine()) != null) {
-                if (line.isBlank()) {
-                    continue;
-                }
-
-                try {
-                    LST.add(parseTask(line));
-                } catch (CookieException exception) {
-                    // Ignore malformed records so one bad line does not prevent startup.
-                }
-            }
-        } catch (IOException e) {
-            System.out.println(SEPARATOR);
-            System.out.println("Oh no! I couldn't load your tasks: " + e.getMessage());
-            System.out.println(SEPARATOR);
-        }
-    }
-
-    /** Converts one saved task record into a task object. */
-    private static Task parseTask(String line) throws CookieException {
-        String[] fields = line.trim().split("\\s*\\|\\s*", -1);
-        if (fields.length < 3) {
-            throw new CookieException("A saved task record is incomplete.");
-        }
-
-        Task task;
-        switch (TaskType.fromCode(fields[0])) {
-        case TODO -> {
-            if (fields.length != 3 || fields[2].isBlank()) {
-                throw new CookieException("A saved todo record is malformed.");
-            }
-            task = new Todo(fields[2]);
-        }
-        case DEADLINE -> {
-            if (fields.length != 4 || fields[2].isBlank() || fields[3].isBlank()) {
-                throw new CookieException("A saved deadline record is malformed.");
-            }
-            try {
-                task = new Deadline(fields[2], DateTimeValue.parseStorageValue(fields[3]));
-            } catch (DateTimeParseException exception) {
-                throw new CookieException("A saved deadline record is malformed.");
-            }
-        }
-        case EVENT -> {
-            if (fields.length != 4 || fields[2].isBlank()) {
-                throw new CookieException("A saved event record is malformed.");
-            }
-            String[] times = fields[3].split("\\s+to\\s+", 2);
-            if (times.length != 2 || times[0].isBlank() || times[1].isBlank()) {
-                throw new CookieException("A saved event record is malformed.");
-            }
-            try {
-                task = new Event(fields[2], DateTimeValue.parseStorageValue(times[0]),
-                        DateTimeValue.parseStorageValue(times[1]));
-            } catch (DateTimeParseException exception) {
-                throw new CookieException("A saved event record is malformed.");
-            }
-        }
-        default -> throw new CookieException("A saved task record is malformed.");
-        }
-
-        if ("Done".equalsIgnoreCase(fields[1])) {
-            task.mark();
-        } else if (!"Not Done".equalsIgnoreCase(fields[1])) {
-            throw new CookieException("A saved task record has an invalid status.");
-        }
-        return task;
-    }
-
     /** Reads and responds to commands until the user enters {@code bye}. */
-    public static void main(String[] args) {
-        loadTasks();
-        greet();
+    public void run() {
+        ui.greet();
 
         Scanner scanner = new Scanner(System.in);
         while (scanner.hasNextLine()) {
-            String input = scanner.nextLine().trim();
+            String input = scanner.nextLine();
             try {
-                if (input.isBlank()) {
-                    throw new CookieException("I couldn't understand an empty command.");
-                }
-
-                String[] parts = input.split("\\s+");
-                String action = parts[0];
-                String description = input.substring(action.length()).trim();
-
-                Command command = Command.fromString(action);
-                switch (command) {
+                Parser.ParsedCommand parsedCommand = parser.parse(input);
+                switch (parsedCommand.command()) {
                     case BYE -> {
-                        requireNoArguments(parts, action);
-                        exit();
+                        parser.requireNoArguments(parsedCommand);
+                        ui.exit();
                         return;
                     }
                     case LIST -> {
-                        requireNoArguments(parts, action);
+                        parser.requireNoArguments(parsedCommand);
                         list();
                     }
                     case MARK -> {
-                        markTask(parseTaskIndex(parts, action));
+                        markTask(parser.parseTaskIndex(parsedCommand, tasks.size()));
                     }
                     case UNMARK -> {
-                        unmarkTask(parseTaskIndex(parts, action));
+                        unmarkTask(parser.parseTaskIndex(parsedCommand, tasks.size()));
                     }
                     case DELETE -> {
-                        deleteTask(parseTaskIndex(parts, action));
+                        deleteTask(parser.parseTaskIndex(parsedCommand, tasks.size()));
                     }
                     case ON -> {
-                        if (parts.length != 2) {
-                            throw new CookieException("Usage: on <date>.");
-                        }
-                        listOnDate(description);
+                        parser.requireSingleArgument(parsedCommand, "on <date>");
+                        listOnDate(parsedCommand.description());
                     }
                     case TODO -> {
-                        addTask(new Todo(requireFileSafe(requireDescription(description, action))));
+                        addTask(new Todo(
+                                parser.requireFileSafe(parser.requireDescription(parsedCommand))));
                     }
                     case DEADLINE -> {
-                        addDeadline(description);
+                        addDeadline(parsedCommand.description());
                     }
                     case EVENT -> {
-                        addEvent(description);
+                        addEvent(parsedCommand.description());
                     }
                 }
             } catch (CookieException exception) {
-                showError(exception);
+                ui.showError(exception);
             }
         }
+    }
+
+    /** Starts Cookie with its default task file. */
+    public static void main(String[] args) {
+        new Cookie("./data/cookie.txt").run();
     }
 }
