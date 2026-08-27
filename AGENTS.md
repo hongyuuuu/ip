@@ -53,3 +53,10 @@ After every Java source-code update:
    ```
 
 Do not consider the code update complete until the skill has been invoked and the test plan passes. If a test fails, stop immediately and report the test case together with its actual and expected output. Preserve the console session transcript in the response.
+
+## JUnit testing
+
+Maintain JUnit tests for at least the highest-value 50% of non-trivial public methods,
+prioritising core parsing, task state, persistence, and date/time behavior. Update the
+relevant JUnit tests after every Java source-code change so that this coverage target
+continues to be met.
