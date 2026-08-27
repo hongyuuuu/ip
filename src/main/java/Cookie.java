@@ -1,11 +1,17 @@
 import java.util.Scanner;
 import java.util.ArrayList;
-/**
- * The main entry point for the Cookie command-line application.
- */
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+
+/** The main entry point for the Cookie command-line application. */
 public class Cookie {
     private static final String SEPARATOR = "____________________________________________________________";
     private static final ArrayList<Task> LST = new ArrayList<>(100);
+    private static final Path FILE_PATH = Paths.get(".", "data", "cookie.txt");
 
     /** Displays Cookie's greeting and the prompt for the first command. */
     private static void greet() {
@@ -34,6 +40,7 @@ public class Cookie {
     /** Stores user input and prints the message indicating a successful addition */
     private static void addTask(Task task) {
         LST.add(task);
+        saveTasks();
         System.out.println(SEPARATOR);
         System.out.println("Ok. I've added this task:");
         System.out.println("   " + task);
@@ -56,6 +63,7 @@ public class Cookie {
     private static void markTask(int idx) {
         Task task = LST.get(idx);
         task.mark();
+        saveTasks();
         System.out.println(SEPARATOR);
         System.out.println("Wow you actually got work done...");
         System.out.println("   " + task);
@@ -66,6 +74,7 @@ public class Cookie {
     private static void unmarkTask(int idx) {
         Task task = LST.get(idx);
         task.unmark();
+        saveTasks();
         System.out.println(SEPARATOR);
         System.out.println("I can't believe you lied to me...");
         System.out.println("   " + task);
@@ -76,6 +85,7 @@ public class Cookie {
     private static void deleteTask(int idx) {
         Task task = LST.get(idx);
         LST.remove(idx);
+        saveTasks();
         System.out.println(SEPARATOR);
         System.out.println("You're welcome. I've gotten rid of this task for you:");
         System.out.println("   " + task);
@@ -145,6 +155,27 @@ public class Cookie {
             throw new CookieException("An event needs a description, a start time after /from, and an end time after /to.");
         }
         addTask(new Event(eventParts[0], timeParts[0], timeParts[1]));
+    }
+
+    /** Saves the current task list to the hard disk. */
+    private static void saveTasks() {
+        try {
+            Path parentDir = FILE_PATH.getParent();
+            if (parentDir != null) {
+                Files.createDirectories(parentDir);
+            }
+
+            try (BufferedWriter writer = Files.newBufferedWriter(FILE_PATH, StandardCharsets.UTF_8)) {
+                for (Task task : LST) {
+                    writer.write(task.toFileFormat());
+                    writer.newLine();
+                }
+            }
+        } catch (IOException e) {
+            System.out.println(SEPARATOR);
+            System.out.println("Oh no! I couldn't save your tasks: " + e.getMessage());
+            System.out.println(SEPARATOR);
+        }
     }
 
     /** Reads and responds to commands until the user enters {@code bye}. */
