@@ -1,5 +1,38 @@
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
+import java.time.format.ResolverStyle;
+import java.util.Locale;
+
 /** Interprets the command structure of user input for Cookie. */
 public class Parser {
+    /** Parses date and time values that use the ISO date format. */
+    private static final DateTimeFormatter ISO_DATE_TIME_INPUT_FORMAT =
+            DateTimeFormatter.ofPattern("uuuu-MM-dd HHmm", Locale.ENGLISH)
+                    .withResolverStyle(ResolverStyle.STRICT);
+
+    /** Parses date and time values that use slash-separated dates. */
+    private static final DateTimeFormatter SLASH_DATE_TIME_INPUT_FORMAT =
+            DateTimeFormatter.ofPattern("d/M/uuuu HHmm", Locale.ENGLISH)
+                    .withResolverStyle(ResolverStyle.STRICT);
+
+    /** Parses date values that use the ISO date format. */
+    private static final DateTimeFormatter ISO_DATE_INPUT_FORMAT =
+            DateTimeFormatter.ofPattern("uuuu-MM-dd", Locale.ENGLISH)
+                    .withResolverStyle(ResolverStyle.STRICT);
+
+    /** Parses date values that use slash-separated dates. */
+    private static final DateTimeFormatter SLASH_DATE_INPUT_FORMAT =
+            DateTimeFormatter.ofPattern("d/M/uuuu", Locale.ENGLISH)
+                    .withResolverStyle(ResolverStyle.STRICT);
+
+    /** Parses time-only values. */
+    private static final DateTimeFormatter TIME_INPUT_FORMAT =
+            DateTimeFormatter.ofPattern("HHmm", Locale.ENGLISH)
+                    .withResolverStyle(ResolverStyle.STRICT);
+
     /** Parses raw user input into a command and its arguments. */
     public ParsedCommand parse(String input) throws CookieException {
         String normalizedInput = input.trim();
@@ -35,6 +68,56 @@ public class Parser {
                     "A " + command.action() + " task needs a description.");
         }
         return command.description();
+    }
+
+    /** Parses a user-provided date, time, or date-time using supported formats. */
+    public DateTimeValue parseDateTime(String value) throws CookieException {
+        String normalizedValue = value.trim().replaceAll("\\s+", " ");
+        DateTimeFormatter[] formats = {
+            ISO_DATE_TIME_INPUT_FORMAT,
+            SLASH_DATE_TIME_INPUT_FORMAT
+        };
+
+        for (DateTimeFormatter format : formats) {
+            try {
+                LocalDateTime dateTime = LocalDateTime.parse(normalizedValue, format);
+                return new DateTimeValue(dateTime.toLocalDate(), dateTime.toLocalTime());
+            } catch (DateTimeParseException exception) {
+                // Try the next supported format.
+            }
+        }
+
+        try {
+            return new DateTimeValue(parseDate(normalizedValue), null);
+        } catch (CookieException exception) {
+            // Try the supported time-only format.
+        }
+
+        try {
+            return new DateTimeValue(null, LocalTime.parse(normalizedValue, TIME_INPUT_FORMAT));
+        } catch (DateTimeParseException exception) {
+            throw new CookieException(
+                    "A date, time, or date and time must use yyyy-MM-dd, d/M/yyyy, HHmm, "
+                            + "yyyy-MM-dd HHmm, or d/M/yyyy HHmm.");
+        }
+    }
+
+    /** Parses a user-provided date using one of the supported date formats. */
+    public LocalDate parseDate(String value) throws CookieException {
+        String normalizedValue = value.trim().replaceAll("\\s+", " ");
+        DateTimeFormatter[] formats = {
+            ISO_DATE_INPUT_FORMAT,
+            SLASH_DATE_INPUT_FORMAT
+        };
+
+        for (DateTimeFormatter format : formats) {
+            try {
+                return LocalDate.parse(normalizedValue, format);
+            } catch (DateTimeParseException exception) {
+                // Try the next supported format.
+            }
+        }
+        throw new CookieException("A date must use yyyy-MM-dd or d/M/yyyy.");
     }
 
     /** Converts a one-based task number into a zero-based list index. */

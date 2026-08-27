@@ -1,13 +1,6 @@
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
-import java.time.format.ResolverStyle;
-import java.util.Locale;
-import java.util.Scanner;
-
 import java.io.IOException;
+import java.time.LocalDate;
+import java.util.Scanner;
 
 /** The main entry point for the Cookie command-line application. */
 public class Cookie {
@@ -15,21 +8,6 @@ public class Cookie {
     private static final Ui UI = new Ui();
     private static final Storage STORAGE = new Storage("./data/cookie.txt");
     private static final Parser PARSER = new Parser();
-    private static final DateTimeFormatter ISO_DATE_TIME_INPUT_FORMAT =
-            DateTimeFormatter.ofPattern("uuuu-MM-dd HHmm", Locale.ENGLISH)
-                    .withResolverStyle(ResolverStyle.STRICT);
-    private static final DateTimeFormatter SLASH_DATE_TIME_INPUT_FORMAT =
-            DateTimeFormatter.ofPattern("d/M/uuuu HHmm", Locale.ENGLISH)
-                    .withResolverStyle(ResolverStyle.STRICT);
-    private static final DateTimeFormatter ISO_DATE_INPUT_FORMAT =
-            DateTimeFormatter.ofPattern("uuuu-MM-dd", Locale.ENGLISH)
-                    .withResolverStyle(ResolverStyle.STRICT);
-    private static final DateTimeFormatter SLASH_DATE_INPUT_FORMAT =
-            DateTimeFormatter.ofPattern("d/M/uuuu", Locale.ENGLISH)
-                    .withResolverStyle(ResolverStyle.STRICT);
-    private static final DateTimeFormatter TIME_INPUT_FORMAT =
-            DateTimeFormatter.ofPattern("HHmm", Locale.ENGLISH)
-                    .withResolverStyle(ResolverStyle.STRICT);
     /** Stores user input and prints the message indicating a successful addition */
     private static void addTask(Task task) {
         LST.add(task);
@@ -96,56 +74,6 @@ public class Cookie {
         return value;
     }
 
-    /** Parses a user-provided date, time, or date-time using supported formats. */
-    private static DateTimeValue parseDateTime(String value) throws CookieException {
-        String normalizedValue = value.trim().replaceAll("\\s+", " ");
-        DateTimeFormatter[] formats = {
-            ISO_DATE_TIME_INPUT_FORMAT,
-            SLASH_DATE_TIME_INPUT_FORMAT
-        };
-
-        for (DateTimeFormatter format : formats) {
-            try {
-                LocalDateTime dateTime = LocalDateTime.parse(normalizedValue, format);
-                return new DateTimeValue(dateTime.toLocalDate(), dateTime.toLocalTime());
-            } catch (DateTimeParseException exception) {
-                // Try the next supported format.
-            }
-        }
-
-        try {
-            return new DateTimeValue(parseDate(normalizedValue), null);
-        } catch (CookieException exception) {
-            // Try the supported time-only format.
-        }
-
-        try {
-            return new DateTimeValue(null, LocalTime.parse(normalizedValue, TIME_INPUT_FORMAT));
-        } catch (DateTimeParseException exception) {
-            throw new CookieException(
-                    "A date, time, or date and time must use yyyy-MM-dd, d/M/yyyy, HHmm, "
-                            + "yyyy-MM-dd HHmm, or d/M/yyyy HHmm.");
-        }
-    }
-
-    /** Parses a user-provided date using one of the supported date formats. */
-    private static LocalDate parseDate(String value) throws CookieException {
-        String normalizedValue = value.trim().replaceAll("\\s+", " ");
-        DateTimeFormatter[] formats = {
-            ISO_DATE_INPUT_FORMAT,
-            SLASH_DATE_INPUT_FORMAT
-        };
-
-        for (DateTimeFormatter format : formats) {
-            try {
-                return LocalDate.parse(normalizedValue, format);
-            } catch (DateTimeParseException exception) {
-                // Try the next supported format.
-            }
-        }
-        throw new CookieException("A date must use yyyy-MM-dd or d/M/yyyy.");
-    }
-
     /** Adds a deadline after validating its description, marker, and date or time. */
     private static void addDeadline(String description) throws CookieException {
         String[] deadlineParts = description.split("\\s+/by\\s+", 2);
@@ -155,7 +83,7 @@ public class Cookie {
         String deadlineValue = requireFileSafe(deadlineParts[1]);
         DateTimeValue deadlineDateTime;
         try {
-            deadlineDateTime = parseDateTime(deadlineValue);
+            deadlineDateTime = PARSER.parseDateTime(deadlineValue);
         } catch (CookieException exception) {
             throw new CookieException(
                     "A deadline date, time, or date and time must use yyyy-MM-dd, d/M/yyyy, "
@@ -181,8 +109,8 @@ public class Cookie {
         DateTimeValue start;
         DateTimeValue end;
         try {
-            start = parseDateTime(startValue);
-            end = parseDateTime(endValue);
+            start = PARSER.parseDateTime(startValue);
+            end = PARSER.parseDateTime(endValue);
         } catch (CookieException exception) {
             throw new CookieException(
                     "An event's start and end values must use yyyy-MM-dd, d/M/yyyy, HHmm, "
@@ -193,7 +121,7 @@ public class Cookie {
 
     /** Displays deadlines and events that occur on the requested calendar date. */
     private static void listOnDate(String value) throws CookieException {
-        LocalDate date = parseDate(value);
+        LocalDate date = PARSER.parseDate(value);
         UI.showTasksOnDate(date, LST);
     }
 
