@@ -19,6 +19,10 @@ public class Ui {
     private static final DateTimeFormatter DISPLAY_DATE_FORMAT =
             DateTimeFormatter.ofPattern("MMM dd yyyy", Locale.ENGLISH);
 
+    /** Creates a UI handler for Cookie. */
+    public Ui() {
+    }
+
     /** Displays Cookie's greeting and the prompt for the first command. */
     public void greet() {
         String banner =
@@ -43,7 +47,11 @@ public class Ui {
         System.out.println(SEPARATOR);
     }
 
-    /** Displays confirmation that a task was added. */
+    /** Displays confirmation that a task was added.
+     *
+     * @param task The added task.
+     * @param taskCount The number of tasks after the addition.
+     */
     public void showTaskAdded(Task task, int taskCount) {
         System.out.println(SEPARATOR);
         System.out.println("Ok. I've added this task:");
@@ -52,7 +60,10 @@ public class Ui {
         System.out.println(SEPARATOR);
     }
 
-    /** Displays all tasks with their one-based positions. */
+    /** Displays all tasks with their one-based positions.
+     *
+     * @param tasks The tasks to display.
+     */
     public void showTaskList(TaskList tasks) {
         System.out.println(SEPARATOR);
         System.out.println("Here are the task(s) in your list:");
@@ -63,7 +74,10 @@ public class Ui {
         System.out.println(SEPARATOR);
     }
 
-    /** Displays confirmation that a task was marked as done. */
+    /** Displays confirmation that a task was marked as done.
+     *
+     * @param task The marked task.
+     */
     public void showTaskMarked(Task task) {
         System.out.println(SEPARATOR);
         System.out.println("Wow you actually got work done...");
@@ -71,7 +85,10 @@ public class Ui {
         System.out.println(SEPARATOR);
     }
 
-    /** Displays confirmation that a task was unmarked as done. */
+    /** Displays confirmation that a task was unmarked as done.
+     *
+     * @param task The unmarked task.
+     */
     public void showTaskUnmarked(Task task) {
         System.out.println(SEPARATOR);
         System.out.println("I can't believe you lied to me...");
@@ -79,7 +96,11 @@ public class Ui {
         System.out.println(SEPARATOR);
     }
 
-    /** Displays confirmation that a task was deleted. */
+    /** Displays confirmation that a task was deleted.
+     *
+     * @param task The deleted task.
+     * @param remainingTaskCount The number of tasks after deletion.
+     */
     public void showTaskDeleted(Task task, int remainingTaskCount) {
         System.out.println(SEPARATOR);
         System.out.println("You're welcome. I've gotten rid of this task for you:");
@@ -88,28 +109,41 @@ public class Ui {
         System.out.println(SEPARATOR);
     }
 
-    /** Displays a friendly error without terminating the application. */
+    /** Displays a friendly error without terminating the application.
+     *
+     * @param exception The error to display.
+     */
     public void showError(CookieException exception) {
         System.out.println(SEPARATOR);
         System.out.println("Bruh... " + exception.getMessage());
         System.out.println(SEPARATOR);
     }
 
-    /** Displays an error encountered while saving tasks. */
+    /** Displays an error encountered while saving tasks.
+     *
+     * @param details The details of the saving error.
+     */
     public void showSaveError(String details) {
         System.out.println(SEPARATOR);
         System.out.println("Oh no! I couldn't save your tasks: " + details);
         System.out.println(SEPARATOR);
     }
 
-    /** Displays an error encountered while loading tasks. */
+    /** Displays an error encountered while loading tasks.
+     *
+     * @param details The details of the loading error.
+     */
     public void showLoadError(String details) {
         System.out.println(SEPARATOR);
         System.out.println("Oh no! I couldn't load your tasks: " + details);
         System.out.println(SEPARATOR);
     }
 
-    /** Displays deadlines and events that occur on the requested calendar date. */
+    /** Displays deadlines and events that occur on the requested calendar date.
+     *
+     * @param date The date to search.
+     * @param tasks The tasks to search.
+     */
     public void showTasksOnDate(LocalDate date, TaskList tasks) {
         System.out.println(SEPARATOR);
         System.out.println("Here are the task(s) on " + date.format(DISPLAY_DATE_FORMAT) + ":");

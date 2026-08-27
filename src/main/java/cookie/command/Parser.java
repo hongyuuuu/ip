@@ -37,7 +37,16 @@ public class Parser {
             DateTimeFormatter.ofPattern("HHmm", Locale.ENGLISH)
                     .withResolverStyle(ResolverStyle.STRICT);
 
-    /** Parses raw user input into a command and its arguments. */
+    /** Creates a parser for Cookie commands. */
+    public Parser() {
+    }
+
+    /** Parses raw user input into a command and its arguments.
+     *
+     * @param input The raw user input to parse.
+     * @return The parsed command and its arguments.
+     * @throws CookieException If the input is blank or uses an unknown command.
+     */
     public ParsedCommand parse(String input) throws CookieException {
         String normalizedInput = input.trim();
         if (normalizedInput.isBlank()) {
@@ -50,7 +59,11 @@ public class Parser {
         return new ParsedCommand(Command.fromString(action), action, parts, description);
     }
 
-    /** Ensures that a command has no arguments after its command word. */
+    /** Ensures that a command has no arguments after its command word.
+     *
+     * @param command The parsed command to validate.
+     * @throws CookieException If the command has one or more arguments.
+     */
     public void requireNoArguments(ParsedCommand command) throws CookieException {
         if (command.argumentCount() > 0) {
             throw new CookieException(
@@ -58,14 +71,24 @@ public class Parser {
         }
     }
 
-    /** Ensures that a command has exactly one argument and reports its usage otherwise. */
+    /** Ensures that a command has exactly one argument and reports its usage otherwise.
+     *
+     * @param command The parsed command to validate.
+     * @param usage The usage message to display when validation fails.
+     * @throws CookieException If the command does not have exactly one argument.
+     */
     public void requireSingleArgument(ParsedCommand command, String usage) throws CookieException {
         if (command.argumentCount() != 1) {
             throw new CookieException("Usage: " + usage + ".");
         }
     }
 
-    /** Returns a task description, rejecting commands with no description. */
+    /** Returns a task description, rejecting commands with no description.
+     *
+     * @param command The parsed command whose description is required.
+     * @return The non-blank task description.
+     * @throws CookieException If the command has no description.
+     */
     public String requireDescription(ParsedCommand command) throws CookieException {
         if (command.description().isBlank()) {
             throw new CookieException(
@@ -74,7 +97,12 @@ public class Parser {
         return command.description();
     }
 
-    /** Rejects a value that would make the task file format ambiguous. */
+    /** Rejects a value that would make the task file format ambiguous.
+     *
+     * @param value The task value to validate.
+     * @return The validated value.
+     * @throws CookieException If the value contains the task-file delimiter.
+     */
     public String requireFileSafe(String value) throws CookieException {
         if (value.contains("|")) {
             throw new CookieException("Task details cannot contain '|'.");
@@ -82,7 +110,12 @@ public class Parser {
         return value;
     }
 
-    /** Parses a user-provided date, time, or date-time using supported formats. */
+    /** Parses a user-provided date, time, or date-time using supported formats.
+     *
+     * @param value The date, time, or date-time text to parse.
+     * @return The parsed date, time, or date-time value.
+     * @throws CookieException If the value does not use a supported format.
+     */
     public DateTimeValue parseDateTime(String value) throws CookieException {
         String normalizedValue = value.trim().replaceAll("\\s+", " ");
         DateTimeFormatter[] formats = {
@@ -114,7 +147,12 @@ public class Parser {
         }
     }
 
-    /** Parses a user-provided date using one of the supported date formats. */
+    /** Parses a user-provided date using one of the supported date formats.
+     *
+     * @param value The date text to parse.
+     * @return The parsed date.
+     * @throws CookieException If the value does not use a supported date format.
+     */
     public LocalDate parseDate(String value) throws CookieException {
         String normalizedValue = value.trim().replaceAll("\\s+", " ");
         DateTimeFormatter[] formats = {
@@ -132,7 +170,12 @@ public class Parser {
         throw new CookieException("A date must use yyyy-MM-dd or d/M/yyyy.");
     }
 
-    /** Parses the description and date or time supplied for a deadline. */
+    /** Parses the description and date or time supplied for a deadline.
+     *
+     * @param description The raw description and deadline value to parse.
+     * @return The parsed deadline.
+     * @throws CookieException If the description or deadline value is malformed.
+     */
     public ParsedDeadline parseDeadline(String description) throws CookieException {
         String[] deadlineParts = description.split("\\s+/by\\s+", 2);
         if (deadlineParts.length < 2 || deadlineParts[0].isBlank() || deadlineParts[1].isBlank()) {
@@ -153,7 +196,12 @@ public class Parser {
         return new ParsedDeadline(taskDescription, deadlineDateTime);
     }
 
-    /** Parses the description and time values supplied for an event. */
+    /** Parses the description and time values supplied for an event.
+     *
+     * @param description The raw description and event values to parse.
+     * @return The parsed event.
+     * @throws CookieException If the description or event values are malformed.
+     */
     public ParsedEvent parseEvent(String description) throws CookieException {
         String[] eventParts = description.split("\\s+/from\\s+", 2);
         if (eventParts.length < 2 || eventParts[0].isBlank()) {
@@ -185,7 +233,13 @@ public class Parser {
         return new ParsedEvent(eventDescription, start, end);
     }
 
-    /** Converts a one-based task number into a zero-based list index. */
+    /** Converts a one-based task number into a zero-based list index.
+     *
+     * @param command The parsed command containing the task number.
+     * @param taskCount The number of tasks currently in the list.
+     * @return The corresponding zero-based list index.
+     * @throws CookieException If the task number is missing, invalid, or out of range.
+     */
     public int parseTaskIndex(ParsedCommand command, int taskCount) throws CookieException {
         if (command.argumentCount() != 1) {
             throw new CookieException("Usage: " + command.action() + " <task number>.");
@@ -225,27 +279,43 @@ public class Parser {
             this.description = description;
         }
 
-        /** Returns the resolved command. */
+        /** Returns the resolved command.
+         *
+         * @return The resolved command.
+         */
         public Command command() {
             return command;
         }
 
-        /** Returns the action word as entered by the user. */
+        /** Returns the action word as entered by the user.
+         *
+         * @return The original action word.
+         */
         public String action() {
             return action;
         }
 
-        /** Returns the number of whitespace-separated arguments. */
+        /** Returns the number of whitespace-separated arguments.
+         *
+         * @return The number of arguments.
+         */
         public int argumentCount() {
             return parts.length - 1;
         }
 
-        /** Returns the argument at the specified zero-based argument position. */
+        /** Returns the argument at the specified zero-based argument position.
+         *
+         * @param index The zero-based argument position.
+         * @return The argument at the specified position.
+         */
         public String argument(int index) {
             return parts[index + 1];
         }
 
-        /** Returns the text following the action word. */
+        /** Returns the text following the action word.
+         *
+         * @return The command description.
+         */
         public String description() {
             return description;
         }
@@ -264,12 +334,18 @@ public class Parser {
             this.dateTime = dateTime;
         }
 
-        /** Returns the validated task description. */
+        /** Returns the validated task description.
+         *
+         * @return The task description.
+         */
         public String description() {
             return description;
         }
 
-        /** Returns the parsed deadline date or time. */
+        /** Returns the parsed deadline date or time.
+         *
+         * @return The deadline date or time.
+         */
         public DateTimeValue dateTime() {
             return dateTime;
         }
@@ -292,17 +368,26 @@ public class Parser {
             this.end = end;
         }
 
-        /** Returns the validated task description. */
+        /** Returns the validated task description.
+         *
+         * @return The task description.
+         */
         public String description() {
             return description;
         }
 
-        /** Returns the parsed event start date or time. */
+        /** Returns the parsed event start date or time.
+         *
+         * @return The event start date or time.
+         */
         public DateTimeValue start() {
             return start;
         }
 
-        /** Returns the parsed event end date or time. */
+        /** Returns the parsed event end date or time.
+         *
+         * @return The event end date or time.
+         */
         public DateTimeValue end() {
             return end;
         }

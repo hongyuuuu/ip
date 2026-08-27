@@ -28,7 +28,10 @@ public class Cookie {
     /** Interprets commands entered by the user. */
     private final Parser parser;
 
-    /** Creates Cookie with a task file at the specified path. */
+    /** Creates Cookie with a task file at the specified path.
+     *
+     * @param filePath The path of the task file.
+     */
     public Cookie(String filePath) {
         this.ui = new Ui();
         this.storage = new Storage(filePath);
@@ -43,7 +46,7 @@ public class Cookie {
         this.tasks = loadedTasks;
     }
 
-    /** Stores user input and prints the message indicating a successful addition */
+    /** Stores user input and prints the message indicating a successful addition. */
     private void addTask(Task task) {
         tasks.add(task);
         if (!saveTasks()) {
@@ -53,12 +56,12 @@ public class Cookie {
         ui.showTaskAdded(task, tasks.size());
     }
 
-    /** Displays the list of items added by users when users enter {@code list} */
+    /** Displays the list of items added by users when users enter {@code list}. */
     private void list() {
         ui.showTaskList(tasks);
     }
 
-    /** Marks task as done and prints message indicating a successful mark as done */
+    /** Marks a task as done and prints a message indicating the successful update. */
     private void markTask(int idx) {
         Task task = tasks.get(idx);
         boolean wasDone = task.isDone();
@@ -74,7 +77,7 @@ public class Cookie {
         ui.showTaskMarked(task);
     }
 
-    /** Unmarks task as done and prints message indicating a successful unmark as done */
+    /** Marks a task as not done and prints a message indicating the successful update. */
     private void unmarkTask(int idx) {
         Task task = tasks.get(idx);
         boolean wasDone = task.isDone();
@@ -179,7 +182,10 @@ public class Cookie {
         }
     }
 
-    /** Starts Cookie with its default task file. */
+    /** Starts Cookie with its default task file.
+     *
+     * @param args Command-line arguments, which are ignored.
+     */
     public static void main(String[] args) {
         new Cookie("./data/cookie.txt").run();
     }
