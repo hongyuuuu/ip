@@ -5,8 +5,10 @@ from __future__ import annotations
 
 import argparse
 import re
+import shutil
 import subprocess
 import sys
+import tempfile
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -20,10 +22,11 @@ class TestCase:
     command: str
     inputs: str
     expected: str
+    saved_data: str = ""
 
 
 FIELD_PATTERN = re.compile(
-    r"^\*\*(Aim|Command|Inputs|Expected output):\*\*\s*(.*)$", re.IGNORECASE
+    r"^\*\*(Aim|Command|Inputs|Expected output|Saved data):\*\*\s*(.*)$", re.IGNORECASE
 )
 HEADING_PATTERN = re.compile(r"^##\s+Test case(?:\s+\d+)?\s*:\s*(.+)$", re.IGNORECASE)
 
@@ -85,11 +88,16 @@ def parse_plan(path: Path) -> list[TestCase]:
                 raise ValueError(f"field appears before a test-case heading on line {index + 1}")
             key = field.group(1).lower().replace(" ", "_")
             value = field.group(2).strip()
-            if key in ("inputs", "expected_output"):
+            if key in ("inputs", "expected_output", "saved_data"):
                 if value:
                     raise ValueError(f"{field.group(1)} must be followed by a fenced code block")
                 value, index = _read_code_block(lines, index + 1)
-                current["expected" if key == "expected_output" else "inputs"] = value
+                if key == "expected_output":
+                    current["expected"] = value
+                elif key == "inputs":
+                    current["inputs"] = value
+                else:
+                    current["saved_data"] = value
                 continue
             if not value:
                 index += 1
@@ -117,7 +125,7 @@ def _display(value: str) -> str:
     return value if value else "<empty>\n"
 
 
-def run_case(case: TestCase, timeout: float) -> tuple[str, int | None, bool]:
+def run_case(case: TestCase, timeout: float, working_dir: Path) -> tuple[str, int | None, bool]:
     """Run one case and return captured output, exit code, and whether it timed out."""
     try:
         process = subprocess.run(
@@ -126,6 +134,7 @@ def run_case(case: TestCase, timeout: float) -> tuple[str, int | None, bool]:
             text=True,
             encoding="utf-8",
             capture_output=True,
+            cwd=working_dir,
             shell=True,
             timeout=timeout,
             check=False,
@@ -161,7 +170,14 @@ def main() -> int:
 
     record(f"UI test session: {args.plan}")
     for number, case in enumerate(cases, start=1):
-        actual, exit_code, timed_out = run_case(case, args.timeout)
+        with tempfile.TemporaryDirectory(prefix="cookie-ui-test-") as temporary_directory:
+            working_dir = Path(temporary_directory)
+            shutil.copytree(Path("out"), working_dir / "out")
+            if case.saved_data:
+                data_file = working_dir / "data" / "cookie.txt"
+                data_file.parent.mkdir(parents=True, exist_ok=True)
+                data_file.write_text(case.saved_data, encoding="utf-8")
+            actual, exit_code, timed_out = run_case(case, args.timeout, working_dir)
         passed = not timed_out and exit_code == 0 and _normalize(actual) == _normalize(case.expected)
 
         record()

@@ -17,6 +17,7 @@ Each test case starts a fresh program process. The command is the program-launch
 | Completion state | 4--5, 25 | 11, 15--17, 22 |
 | Deadline and event | 6--7 | 10, 18, 23--24 |
 | Deletion | 19 | 20--22 |
+| Persistence | 27 | -- |
 
 The expected output in every case is compared exactly, including spaces and separators.
 
@@ -1002,6 +1003,48 @@ ____________________________________________________________
 ____________________________________________________________
 Here are the task(s) in your list:
 1. [T][ ] buy milk
+____________________________________________________________
+____________________________________________________________
+Bye. I'm going to sleep.
+____________________________________________________________
+```
+
+## Test case 27: Load tasks from disk
+
+**Aim:** Verify that Cookie loads todo, deadline, and event tasks from the saved file, including their completion states and task-specific details.
+
+**Saved data:**
+```text
+T | Done | finish report
+D | Not Done | return book | Sunday
+E | Not Done | project meeting | Mon 2pm to 4pm
+```
+
+**Command:** `java "-Dfile.encoding=UTF-8" "-Dstdout.encoding=UTF-8" -cp out Cookie`
+
+**Inputs:**
+```text
+list
+bye
+```
+
+**Expected output:**
+```text
+____________________________________________________________
+ ██████╗ ██████╗  ██████╗ ██╗  ██╗██╗███████╗
+██╔════╝██╔═══██╗██╔═══██╗██║ ██╔╝██║██╔════╝
+██║     ██║   ██║██║   ██║█████╔╝ ██║█████╗  
+██║     ██║   ██║██║   ██║██╔═██╗ ██║██╔══╝  
+╚██████╗╚██████╔╝╚██████╔╝██║  ██╗██║███████╗
+ ╚═════╝ ╚═════╝  ╚═════╝ ╚═╝  ╚═╝╚═╝╚══════╝
+Hello! I'm your favourite chatbot Cookie.
+What do you need today?
+____________________________________________________________
+____________________________________________________________
+Here are the task(s) in your list:
+1. [T][X] finish report
+2. [D][ ] return book (by: Sunday)
+3. [E][ ] project meeting (from: Mon 2pm to: 4pm)
 ____________________________________________________________
 ____________________________________________________________
 Bye. I'm going to sleep.

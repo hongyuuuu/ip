@@ -26,6 +26,11 @@ Unless the user says otherwise, assume that you are assisting a student working 
 
 # Project-specific requirements
 
+## Java coding conventions:
+
+Follow the [SE-EDUCATION intermediate Java coding standard](https://se-education.org/guides/conventions/java/intermediate.html)
+for Java naming, layout, statements, imports, comments, and related conventions. Use the Google Java Style Guide for topics not covered by the standard.
+
 ## Java version:
 
 Ensure that Java 25 is used when running the application or build tasks. On macOS, use `sdk use java 25.0.3.fx-zulu` to switch to Java 25 if needed.

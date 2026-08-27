@@ -1,7 +1,10 @@
 import java.util.Scanner;
 import java.util.ArrayList;
+
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
+
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -178,8 +181,77 @@ public class Cookie {
         }
     }
 
+    /** Loads valid task records from the hard-disk file when Cookie starts. */
+    private static void loadTasks() {
+        if (!Files.exists(FILE_PATH)) {
+            return;
+        }
+
+        try (BufferedReader reader = Files.newBufferedReader(FILE_PATH, StandardCharsets.UTF_8)) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                if (line.isBlank()) {
+                    continue;
+                }
+
+                try {
+                    LST.add(parseTask(line));
+                } catch (CookieException exception) {
+                    // Ignore malformed records so one bad line does not prevent startup.
+                }
+            }
+        } catch (IOException e) {
+            System.out.println(SEPARATOR);
+            System.out.println("Oh no! I couldn't load your tasks: " + e.getMessage());
+            System.out.println(SEPARATOR);
+        }
+    }
+
+    /** Converts one saved task record into a task object. */
+    private static Task parseTask(String line) throws CookieException {
+        String[] fields = line.split("\\s*\\|\\s*", -1);
+        if (fields.length < 3) {
+            throw new CookieException("A saved task record is incomplete.");
+        }
+
+        Task task;
+        switch (TaskType.fromCode(fields[0])) {
+        case TODO -> {
+            if (fields.length != 3 || fields[2].isBlank()) {
+                throw new CookieException("A saved todo record is malformed.");
+            }
+            task = new Todo(fields[2]);
+        }
+        case DEADLINE -> {
+            if (fields.length != 4 || fields[2].isBlank() || fields[3].isBlank()) {
+                throw new CookieException("A saved deadline record is malformed.");
+            }
+            task = new Deadline(fields[2], fields[3]);
+        }
+        case EVENT -> {
+            if (fields.length != 4 || fields[2].isBlank()) {
+                throw new CookieException("A saved event record is malformed.");
+            }
+            String[] times = fields[3].split("\\s+to\\s+", 2);
+            if (times.length != 2 || times[0].isBlank() || times[1].isBlank()) {
+                throw new CookieException("A saved event record is malformed.");
+            }
+            task = new Event(fields[2], times[0], times[1]);
+        }
+        default -> throw new CookieException("A saved task record is malformed.");
+        }
+
+        if ("Done".equalsIgnoreCase(fields[1])) {
+            task.mark();
+        } else if (!"Not Done".equalsIgnoreCase(fields[1])) {
+            throw new CookieException("A saved task record has an invalid status.");
+        }
+        return task;
+    }
+
     /** Reads and responds to commands until the user enters {@code bye}. */
     public static void main(String[] args) {
+        loadTasks();
         greet();
 
         Scanner scanner = new Scanner(System.in);
