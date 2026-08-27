@@ -27,13 +27,23 @@ public class TaskList implements Iterable<Task> {
         tasks.add(index, task);
     }
 
+    /** Marks the task at the specified position as done. */
+    public void mark(int index) {
+        tasks.get(index).mark();
+    }
+
+    /** Marks the task at the specified position as not done. */
+    public void unmark(int index) {
+        tasks.get(index).unmark();
+    }
+
     /** Returns the task at the specified position. */
     public Task get(int index) {
         return tasks.get(index);
     }
 
-    /** Removes and returns the task at the specified position. */
-    public Task remove(int index) {
+    /** Deletes and returns the task at the specified position. */
+    public Task delete(int index) {
         return tasks.remove(index);
     }
 

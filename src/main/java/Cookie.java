@@ -35,7 +35,7 @@ public class Cookie {
     private void addTask(Task task) {
         tasks.add(task);
         if (!saveTasks()) {
-            tasks.remove(tasks.size() - 1);
+            tasks.delete(tasks.size() - 1);
             return;
         }
         ui.showTaskAdded(task, tasks.size());
@@ -50,12 +50,12 @@ public class Cookie {
     private void markTask(int idx) {
         Task task = tasks.get(idx);
         boolean wasDone = task.isDone;
-        task.mark();
+        tasks.mark(idx);
         if (!saveTasks()) {
             if (wasDone) {
-                task.mark();
+                tasks.mark(idx);
             } else {
-                task.unmark();
+                tasks.unmark(idx);
             }
             return;
         }
@@ -66,12 +66,12 @@ public class Cookie {
     private void unmarkTask(int idx) {
         Task task = tasks.get(idx);
         boolean wasDone = task.isDone;
-        task.unmark();
+        tasks.unmark(idx);
         if (!saveTasks()) {
             if (wasDone) {
-                task.mark();
+                tasks.mark(idx);
             } else {
-                task.unmark();
+                tasks.unmark(idx);
             }
             return;
         }
@@ -81,7 +81,7 @@ public class Cookie {
     /** Deletes the selected task and reports the removed task and remaining task count. */
     private void deleteTask(int idx) {
         Task task = tasks.get(idx);
-        tasks.remove(idx);
+        tasks.delete(idx);
         if (!saveTasks()) {
             tasks.add(idx, task);
             return;
