@@ -1,11 +1,22 @@
 import java.util.Scanner;
 import java.util.ArrayList;
-/**
- * The main entry point for the Cookie command-line application.
- */
+
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.IOException;
+
+import java.nio.charset.StandardCharsets;
+import java.nio.file.AtomicMoveNotSupportedException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
+
+/** The main entry point for the Cookie command-line application. */
 public class Cookie {
     private static final String SEPARATOR = "____________________________________________________________";
     private static final ArrayList<Task> LST = new ArrayList<>(100);
+    private static final Path FILE_PATH = Paths.get(".", "data", "cookie.txt");
 
     /** Displays Cookie's greeting and the prompt for the first command. */
     private static void greet() {
@@ -34,6 +45,10 @@ public class Cookie {
     /** Stores user input and prints the message indicating a successful addition */
     private static void addTask(Task task) {
         LST.add(task);
+        if (!saveTasks()) {
+            LST.remove(LST.size() - 1);
+            return;
+        }
         System.out.println(SEPARATOR);
         System.out.println("Ok. I've added this task:");
         System.out.println("   " + task);
@@ -55,7 +70,16 @@ public class Cookie {
     /** Marks task as done and prints message indicating a successful mark as done */
     private static void markTask(int idx) {
         Task task = LST.get(idx);
+        boolean wasDone = task.isDone;
         task.mark();
+        if (!saveTasks()) {
+            if (wasDone) {
+                task.mark();
+            } else {
+                task.unmark();
+            }
+            return;
+        }
         System.out.println(SEPARATOR);
         System.out.println("Wow you actually got work done...");
         System.out.println("   " + task);
@@ -65,7 +89,16 @@ public class Cookie {
     /** Unmarks task as done and prints message indicating a successful unmark as done */
     private static void unmarkTask(int idx) {
         Task task = LST.get(idx);
+        boolean wasDone = task.isDone;
         task.unmark();
+        if (!saveTasks()) {
+            if (wasDone) {
+                task.mark();
+            } else {
+                task.unmark();
+            }
+            return;
+        }
         System.out.println(SEPARATOR);
         System.out.println("I can't believe you lied to me...");
         System.out.println("   " + task);
@@ -76,6 +109,10 @@ public class Cookie {
     private static void deleteTask(int idx) {
         Task task = LST.get(idx);
         LST.remove(idx);
+        if (!saveTasks()) {
+            LST.add(idx, task);
+            return;
+        }
         System.out.println(SEPARATOR);
         System.out.println("You're welcome. I've gotten rid of this task for you:");
         System.out.println("   " + task);
@@ -105,6 +142,14 @@ public class Cookie {
         return description;
     }
 
+    /** Rejects a value that would make the task file format ambiguous. */
+    private static String requireFileSafe(String value) throws CookieException {
+        if (value.contains("|")) {
+            throw new CookieException("Task details cannot contain '|'.");
+        }
+        return value;
+    }
+
     /** Converts a one-based task number into a zero-based list index. */
     private static int parseTaskIndex(String[] parts, String action) throws CookieException {
         if (parts.length != 2) {
@@ -130,7 +175,7 @@ public class Cookie {
         if (deadlineParts.length < 2 || deadlineParts[0].isBlank() || deadlineParts[1].isBlank()) {
             throw new CookieException("A deadline needs a description and a date after /by.");
         }
-        addTask(new Deadline(deadlineParts[0], deadlineParts[1]));
+        addTask(new Deadline(requireFileSafe(deadlineParts[0]), requireFileSafe(deadlineParts[1])));
     }
 
     /** Adds an event after validating its description and both time markers. */
@@ -144,11 +189,121 @@ public class Cookie {
         if (timeParts.length < 2 || timeParts[0].isBlank() || timeParts[1].isBlank()) {
             throw new CookieException("An event needs a description, a start time after /from, and an end time after /to.");
         }
-        addTask(new Event(eventParts[0], timeParts[0], timeParts[1]));
+        addTask(new Event(requireFileSafe(eventParts[0]), requireFileSafe(timeParts[0]),
+                requireFileSafe(timeParts[1])));
+    }
+
+    /** Saves the current task list to the hard disk and reports whether it succeeded. */
+    private static boolean saveTasks() {
+        Path temporaryFile = null;
+        try {
+            Path parentDir = FILE_PATH.getParent();
+            if (parentDir != null) {
+                Files.createDirectories(parentDir);
+            }
+
+            temporaryFile = parentDir == null
+                    ? Files.createTempFile("cookie-", ".tmp")
+                    : Files.createTempFile(parentDir, ".cookie-", ".tmp");
+            try (BufferedWriter writer = Files.newBufferedWriter(temporaryFile, StandardCharsets.UTF_8)) {
+                for (Task task : LST) {
+                    writer.write(task.toFileFormat());
+                    writer.newLine();
+                }
+            }
+            try {
+                Files.move(temporaryFile, FILE_PATH, StandardCopyOption.ATOMIC_MOVE,
+                        StandardCopyOption.REPLACE_EXISTING);
+            } catch (AtomicMoveNotSupportedException exception) {
+                Files.move(temporaryFile, FILE_PATH, StandardCopyOption.REPLACE_EXISTING);
+            }
+            return true;
+        } catch (IOException e) {
+            if (temporaryFile != null) {
+                try {
+                    Files.deleteIfExists(temporaryFile);
+                } catch (IOException ignored) {
+                    // Preserve the original save error for the user.
+                }
+            }
+            System.out.println(SEPARATOR);
+            System.out.println("Oh no! I couldn't save your tasks: " + e.getMessage());
+            System.out.println(SEPARATOR);
+            return false;
+        }
+    }
+
+    /** Loads valid task records from the hard-disk file when Cookie starts. */
+    private static void loadTasks() {
+        if (!Files.exists(FILE_PATH)) {
+            return;
+        }
+
+        try (BufferedReader reader = Files.newBufferedReader(FILE_PATH, StandardCharsets.UTF_8)) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                if (line.isBlank()) {
+                    continue;
+                }
+
+                try {
+                    LST.add(parseTask(line));
+                } catch (CookieException exception) {
+                    // Ignore malformed records so one bad line does not prevent startup.
+                }
+            }
+        } catch (IOException e) {
+            System.out.println(SEPARATOR);
+            System.out.println("Oh no! I couldn't load your tasks: " + e.getMessage());
+            System.out.println(SEPARATOR);
+        }
+    }
+
+    /** Converts one saved task record into a task object. */
+    private static Task parseTask(String line) throws CookieException {
+        String[] fields = line.trim().split("\\s*\\|\\s*", -1);
+        if (fields.length < 3) {
+            throw new CookieException("A saved task record is incomplete.");
+        }
+
+        Task task;
+        switch (TaskType.fromCode(fields[0])) {
+        case TODO -> {
+            if (fields.length != 3 || fields[2].isBlank()) {
+                throw new CookieException("A saved todo record is malformed.");
+            }
+            task = new Todo(fields[2]);
+        }
+        case DEADLINE -> {
+            if (fields.length != 4 || fields[2].isBlank() || fields[3].isBlank()) {
+                throw new CookieException("A saved deadline record is malformed.");
+            }
+            task = new Deadline(fields[2], fields[3]);
+        }
+        case EVENT -> {
+            if (fields.length != 4 || fields[2].isBlank()) {
+                throw new CookieException("A saved event record is malformed.");
+            }
+            String[] times = fields[3].split("\\s+to\\s+", 2);
+            if (times.length != 2 || times[0].isBlank() || times[1].isBlank()) {
+                throw new CookieException("A saved event record is malformed.");
+            }
+            task = new Event(fields[2], times[0], times[1]);
+        }
+        default -> throw new CookieException("A saved task record is malformed.");
+        }
+
+        if ("Done".equalsIgnoreCase(fields[1])) {
+            task.mark();
+        } else if (!"Not Done".equalsIgnoreCase(fields[1])) {
+            throw new CookieException("A saved task record has an invalid status.");
+        }
+        return task;
     }
 
     /** Reads and responds to commands until the user enters {@code bye}. */
     public static void main(String[] args) {
+        loadTasks();
         greet();
 
         Scanner scanner = new Scanner(System.in);
@@ -184,7 +339,7 @@ public class Cookie {
                         deleteTask(parseTaskIndex(parts, action));
                     }
                     case TODO -> {
-                        addTask(new Todo(requireDescription(description, action)));
+                        addTask(new Todo(requireFileSafe(requireDescription(description, action))));
                     }
                     case DEADLINE -> {
                         addDeadline(description);
