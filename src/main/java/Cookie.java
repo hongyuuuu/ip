@@ -20,8 +20,8 @@ import java.nio.file.StandardCopyOption;
 
 /** The main entry point for the Cookie command-line application. */
 public class Cookie {
-    private static final String SEPARATOR = "____________________________________________________________";
     private static final TaskList LST = new TaskList();
+    private static final Ui UI = new Ui();
     private static final Path FILE_PATH = Paths.get(".", "data", "cookie.txt");
     private static final DateTimeFormatter ISO_DATE_TIME_INPUT_FORMAT =
             DateTimeFormatter.ofPattern("uuuu-MM-dd HHmm", Locale.ENGLISH)
@@ -38,33 +38,6 @@ public class Cookie {
     private static final DateTimeFormatter TIME_INPUT_FORMAT =
             DateTimeFormatter.ofPattern("HHmm", Locale.ENGLISH)
                     .withResolverStyle(ResolverStyle.STRICT);
-    private static final DateTimeFormatter DISPLAY_DATE_FORMAT =
-            DateTimeFormatter.ofPattern("MMM dd yyyy", Locale.ENGLISH);
-
-    /** Displays Cookie's greeting and the prompt for the first command. */
-    private static void greet() {
-        String banner =
-                  " ██████╗ ██████╗  ██████╗ ██╗  ██╗██╗███████╗\n"
-                + "██╔════╝██╔═══██╗██╔═══██╗██║ ██╔╝██║██╔════╝\n"
-                + "██║     ██║   ██║██║   ██║█████╔╝ ██║█████╗  \n"
-                + "██║     ██║   ██║██║   ██║██╔═██╗ ██║██╔══╝  \n"
-                + "╚██████╗╚██████╔╝╚██████╔╝██║  ██╗██║███████╗\n"
-                + " ╚═════╝ ╚═════╝  ╚═════╝ ╚═╝  ╚═╝╚═╝╚══════╝";
-
-        System.out.println(SEPARATOR);
-        System.out.println(banner);
-        System.out.println("Hello! I'm your favourite chatbot Cookie.");
-        System.out.println("What do you need today?");
-        System.out.println(SEPARATOR);
-    }
-
-    /** Prints the message shown when the user ends the conversation. */
-    private static void exit() {
-        System.out.println(SEPARATOR);
-        System.out.println("Bye. I'm going to sleep.");
-        System.out.println(SEPARATOR);
-    }
-
     /** Stores user input and prints the message indicating a successful addition */
     private static void addTask(Task task) {
         LST.add(task);
@@ -72,22 +45,12 @@ public class Cookie {
             LST.remove(LST.size() - 1);
             return;
         }
-        System.out.println(SEPARATOR);
-        System.out.println("Ok. I've added this task:");
-        System.out.println("   " + task);
-        System.out.println("You have " + LST.size() + " task(s) now. Better start working.");
-        System.out.println(SEPARATOR);
+        UI.showTaskAdded(task, LST.size());
     }
 
     /** Displays the list of items added by users when users enter {@code list} */
     private static void list() {
-        System.out.println(SEPARATOR);
-        System.out.println("Here are the task(s) in your list:");
-        for (int i = 0; i < LST.size(); i++) {
-            Task task = LST.get(i);
-            System.out.println(i+1 + ". " + task);
-        }
-        System.out.println(SEPARATOR);
+        UI.showTaskList(LST);
     }
 
     /** Marks task as done and prints message indicating a successful mark as done */
@@ -103,10 +66,7 @@ public class Cookie {
             }
             return;
         }
-        System.out.println(SEPARATOR);
-        System.out.println("Wow you actually got work done...");
-        System.out.println("   " + task);
-        System.out.println(SEPARATOR);
+        UI.showTaskMarked(task);
     }
 
     /** Unmarks task as done and prints message indicating a successful unmark as done */
@@ -122,10 +82,7 @@ public class Cookie {
             }
             return;
         }
-        System.out.println(SEPARATOR);
-        System.out.println("I can't believe you lied to me...");
-        System.out.println("   " + task);
-        System.out.println(SEPARATOR);
+        UI.showTaskUnmarked(task);
     }
 
     /** Deletes the selected task and reports the removed task and remaining task count. */
@@ -136,18 +93,7 @@ public class Cookie {
             LST.add(idx, task);
             return;
         }
-        System.out.println(SEPARATOR);
-        System.out.println("You're welcome. I've gotten rid of this task for you:");
-        System.out.println("   " + task);
-        System.out.println("Now you have " + LST.size() + " task(s) in the list.");
-        System.out.println(SEPARATOR);
-    }
-
-    /** Displays a friendly error without terminating the application. */
-    private static void showError(CookieException exception) {
-        System.out.println(SEPARATOR);
-        System.out.println("Bruh... " + exception.getMessage());
-        System.out.println(SEPARATOR);
+        UI.showTaskDeleted(task, LST.size());
     }
 
     /** Ensures that a command has no arguments after its command word. */
@@ -287,42 +233,10 @@ public class Cookie {
         addTask(new Event(eventDescription, start, end));
     }
 
-    /** Returns whether an event has a date range that includes the requested date. */
-    private static boolean occursOnDate(Event event, LocalDate date) {
-        LocalDate startDate = event.getStart().getDate();
-        LocalDate endDate = event.getEnd().getDate();
-        if (startDate == null && endDate == null) {
-            return false;
-        }
-        if (startDate == null) {
-            startDate = endDate;
-        }
-        if (endDate == null) {
-            endDate = startDate;
-        }
-        return !date.isBefore(startDate) && !date.isAfter(endDate);
-    }
-
     /** Displays deadlines and events that occur on the requested calendar date. */
     private static void listOnDate(String value) throws CookieException {
         LocalDate date = parseDate(value);
-
-        System.out.println(SEPARATOR);
-        System.out.println("Here are the task(s) on " + date.format(DISPLAY_DATE_FORMAT) + ":");
-        for (int i = 0; i < LST.size(); i++) {
-            Task task = LST.get(i);
-            boolean occursOnDate = false;
-            if (task instanceof Deadline deadline) {
-                occursOnDate = date.equals(deadline.getBy().getDate());
-            } else if (task instanceof Event event) {
-                occursOnDate = occursOnDate(event, date);
-            }
-
-            if (occursOnDate) {
-                System.out.println(i + 1 + ". " + task);
-            }
-        }
-        System.out.println(SEPARATOR);
+        UI.showTasksOnDate(date, LST);
     }
 
     /** Saves the current task list to the hard disk and reports whether it succeeded. */
@@ -358,9 +272,7 @@ public class Cookie {
                     // Preserve the original save error for the user.
                 }
             }
-            System.out.println(SEPARATOR);
-            System.out.println("Oh no! I couldn't save your tasks: " + e.getMessage());
-            System.out.println(SEPARATOR);
+            UI.showSaveError(e.getMessage());
             return false;
         }
     }
@@ -385,9 +297,7 @@ public class Cookie {
                 }
             }
         } catch (IOException e) {
-            System.out.println(SEPARATOR);
-            System.out.println("Oh no! I couldn't load your tasks: " + e.getMessage());
-            System.out.println(SEPARATOR);
+            UI.showLoadError(e.getMessage());
         }
     }
 
@@ -445,7 +355,7 @@ public class Cookie {
     /** Reads and responds to commands until the user enters {@code bye}. */
     public static void main(String[] args) {
         loadTasks();
-        greet();
+        UI.greet();
 
         Scanner scanner = new Scanner(System.in);
         while (scanner.hasNextLine()) {
@@ -463,7 +373,7 @@ public class Cookie {
                 switch (command) {
                     case BYE -> {
                         requireNoArguments(parts, action);
-                        exit();
+                        UI.exit();
                         return;
                     }
                     case LIST -> {
@@ -496,7 +406,7 @@ public class Cookie {
                     }
                 }
             } catch (CookieException exception) {
-                showError(exception);
+                UI.showError(exception);
             }
         }
     }
