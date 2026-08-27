@@ -14,6 +14,7 @@ public class Cookie {
     private static TaskList LST = new TaskList();
     private static final Ui UI = new Ui();
     private static final Storage STORAGE = new Storage("./data/cookie.txt");
+    private static final Parser PARSER = new Parser();
     private static final DateTimeFormatter ISO_DATE_TIME_INPUT_FORMAT =
             DateTimeFormatter.ofPattern("uuuu-MM-dd HHmm", Locale.ENGLISH)
                     .withResolverStyle(ResolverStyle.STRICT);
@@ -87,46 +88,12 @@ public class Cookie {
         UI.showTaskDeleted(task, LST.size());
     }
 
-    /** Ensures that a command has no arguments after its command word. */
-    private static void requireNoArguments(String[] parts, String action) throws CookieException {
-        if (parts.length > 1) {
-            throw new CookieException("The " + action + " command does not take any arguments.");
-        }
-    }
-
-    /** Returns a task description, rejecting commands with no description. */
-    private static String requireDescription(String description, String action) throws CookieException {
-        if (description.isBlank()) {
-            throw new CookieException("A " + action + " task needs a description.");
-        }
-        return description;
-    }
-
     /** Rejects a value that would make the task file format ambiguous. */
     private static String requireFileSafe(String value) throws CookieException {
         if (value.contains("|")) {
             throw new CookieException("Task details cannot contain '|'.");
         }
         return value;
-    }
-
-    /** Converts a one-based task number into a zero-based list index. */
-    private static int parseTaskIndex(String[] parts, String action) throws CookieException {
-        if (parts.length != 2) {
-            throw new CookieException("Usage: " + action + " <task number>.");
-        }
-
-        int taskNumber;
-        try {
-            taskNumber = Integer.parseInt(parts[1]);
-        } catch (NumberFormatException exception) {
-            throw new CookieException("The task number must be a positive whole number.");
-        }
-
-        if (taskNumber < 1 || taskNumber > LST.size()) {
-            throw new CookieException("There is no task numbered " + taskNumber + ".");
-        }
-        return taskNumber - 1;
     }
 
     /** Parses a user-provided date, time, or date-time using supported formats. */
@@ -257,50 +224,40 @@ public class Cookie {
 
         Scanner scanner = new Scanner(System.in);
         while (scanner.hasNextLine()) {
-            String input = scanner.nextLine().trim();
+            String input = scanner.nextLine();
             try {
-                if (input.isBlank()) {
-                    throw new CookieException("I couldn't understand an empty command.");
-                }
-
-                String[] parts = input.split("\\s+");
-                String action = parts[0];
-                String description = input.substring(action.length()).trim();
-
-                Command command = Command.fromString(action);
-                switch (command) {
+                Parser.ParsedCommand parsedCommand = PARSER.parse(input);
+                switch (parsedCommand.command()) {
                     case BYE -> {
-                        requireNoArguments(parts, action);
+                        PARSER.requireNoArguments(parsedCommand);
                         UI.exit();
                         return;
                     }
                     case LIST -> {
-                        requireNoArguments(parts, action);
+                        PARSER.requireNoArguments(parsedCommand);
                         list();
                     }
                     case MARK -> {
-                        markTask(parseTaskIndex(parts, action));
+                        markTask(PARSER.parseTaskIndex(parsedCommand, LST.size()));
                     }
                     case UNMARK -> {
-                        unmarkTask(parseTaskIndex(parts, action));
+                        unmarkTask(PARSER.parseTaskIndex(parsedCommand, LST.size()));
                     }
                     case DELETE -> {
-                        deleteTask(parseTaskIndex(parts, action));
+                        deleteTask(PARSER.parseTaskIndex(parsedCommand, LST.size()));
                     }
                     case ON -> {
-                        if (parts.length != 2) {
-                            throw new CookieException("Usage: on <date>.");
-                        }
-                        listOnDate(description);
+                        PARSER.requireSingleArgument(parsedCommand, "on <date>");
+                        listOnDate(parsedCommand.description());
                     }
                     case TODO -> {
-                        addTask(new Todo(requireFileSafe(requireDescription(description, action))));
+                        addTask(new Todo(requireFileSafe(PARSER.requireDescription(parsedCommand))));
                     }
                     case DEADLINE -> {
-                        addDeadline(description);
+                        addDeadline(parsedCommand.description());
                     }
                     case EVENT -> {
-                        addEvent(description);
+                        addEvent(parsedCommand.description());
                     }
                 }
             } catch (CookieException exception) {
