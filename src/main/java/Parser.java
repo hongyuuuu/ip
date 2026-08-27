@@ -70,6 +70,14 @@ public class Parser {
         return command.description();
     }
 
+    /** Rejects a value that would make the task file format ambiguous. */
+    public String requireFileSafe(String value) throws CookieException {
+        if (value.contains("|")) {
+            throw new CookieException("Task details cannot contain '|'.");
+        }
+        return value;
+    }
+
     /** Parses a user-provided date, time, or date-time using supported formats. */
     public DateTimeValue parseDateTime(String value) throws CookieException {
         String normalizedValue = value.trim().replaceAll("\\s+", " ");
@@ -118,6 +126,59 @@ public class Parser {
             }
         }
         throw new CookieException("A date must use yyyy-MM-dd or d/M/yyyy.");
+    }
+
+    /** Parses the description and date or time supplied for a deadline. */
+    public ParsedDeadline parseDeadline(String description) throws CookieException {
+        String[] deadlineParts = description.split("\\s+/by\\s+", 2);
+        if (deadlineParts.length < 2 || deadlineParts[0].isBlank() || deadlineParts[1].isBlank()) {
+            throw new CookieException(
+                    "A deadline needs a description and a date and time after /by.");
+        }
+
+        String taskDescription = requireFileSafe(deadlineParts[0]);
+        String deadlineValue = requireFileSafe(deadlineParts[1]);
+        DateTimeValue deadlineDateTime;
+        try {
+            deadlineDateTime = parseDateTime(deadlineValue);
+        } catch (CookieException exception) {
+            throw new CookieException(
+                    "A deadline date, time, or date and time must use yyyy-MM-dd, d/M/yyyy, "
+                            + "HHmm, yyyy-MM-dd HHmm, or d/M/yyyy HHmm.");
+        }
+        return new ParsedDeadline(taskDescription, deadlineDateTime);
+    }
+
+    /** Parses the description and time values supplied for an event. */
+    public ParsedEvent parseEvent(String description) throws CookieException {
+        String[] eventParts = description.split("\\s+/from\\s+", 2);
+        if (eventParts.length < 2 || eventParts[0].isBlank()) {
+            throw new CookieException(
+                    "An event needs a description, a start time after /from, "
+                            + "and an end time after /to.");
+        }
+
+        String[] timeParts = eventParts[1].split("\\s+/to\\s+", 2);
+        if (timeParts.length < 2 || timeParts[0].isBlank() || timeParts[1].isBlank()) {
+            throw new CookieException(
+                    "An event needs a description, a start time after /from, "
+                            + "and an end time after /to.");
+        }
+
+        String eventDescription = requireFileSafe(eventParts[0]);
+        String startValue = requireFileSafe(timeParts[0]);
+        String endValue = requireFileSafe(timeParts[1]);
+        DateTimeValue start;
+        DateTimeValue end;
+        try {
+            start = parseDateTime(startValue);
+            end = parseDateTime(endValue);
+        } catch (CookieException exception) {
+            throw new CookieException(
+                    "An event's start and end values must use yyyy-MM-dd, d/M/yyyy, HHmm, "
+                            + "yyyy-MM-dd HHmm, or d/M/yyyy HHmm.");
+        }
+        return new ParsedEvent(eventDescription, start, end);
     }
 
     /** Converts a one-based task number into a zero-based list index. */
@@ -183,6 +244,63 @@ public class Parser {
         /** Returns the text following the action word. */
         public String description() {
             return description;
+        }
+    }
+
+    /** Holds the parsed description and temporal value of a deadline command. */
+    public static final class ParsedDeadline {
+        /** The validated task description. */
+        private final String description;
+
+        /** The parsed deadline date or time. */
+        private final DateTimeValue dateTime;
+
+        private ParsedDeadline(String description, DateTimeValue dateTime) {
+            this.description = description;
+            this.dateTime = dateTime;
+        }
+
+        /** Returns the validated task description. */
+        public String description() {
+            return description;
+        }
+
+        /** Returns the parsed deadline date or time. */
+        public DateTimeValue dateTime() {
+            return dateTime;
+        }
+    }
+
+    /** Holds the parsed description and temporal values of an event command. */
+    public static final class ParsedEvent {
+        /** The validated task description. */
+        private final String description;
+
+        /** The parsed event start date or time. */
+        private final DateTimeValue start;
+
+        /** The parsed event end date or time. */
+        private final DateTimeValue end;
+
+        private ParsedEvent(String description, DateTimeValue start, DateTimeValue end) {
+            this.description = description;
+            this.start = start;
+            this.end = end;
+        }
+
+        /** Returns the validated task description. */
+        public String description() {
+            return description;
+        }
+
+        /** Returns the parsed event start date or time. */
+        public DateTimeValue start() {
+            return start;
+        }
+
+        /** Returns the parsed event end date or time. */
+        public DateTimeValue end() {
+            return end;
         }
     }
 }

@@ -66,57 +66,16 @@ public class Cookie {
         UI.showTaskDeleted(task, LST.size());
     }
 
-    /** Rejects a value that would make the task file format ambiguous. */
-    private static String requireFileSafe(String value) throws CookieException {
-        if (value.contains("|")) {
-            throw new CookieException("Task details cannot contain '|'.");
-        }
-        return value;
-    }
-
-    /** Adds a deadline after validating its description, marker, and date or time. */
+    /** Adds a deadline after the parser validates its description and date or time. */
     private static void addDeadline(String description) throws CookieException {
-        String[] deadlineParts = description.split("\\s+/by\\s+", 2);
-        if (deadlineParts.length < 2 || deadlineParts[0].isBlank() || deadlineParts[1].isBlank()) {
-            throw new CookieException("A deadline needs a description and a date and time after /by.");
-        }
-        String deadlineValue = requireFileSafe(deadlineParts[1]);
-        DateTimeValue deadlineDateTime;
-        try {
-            deadlineDateTime = PARSER.parseDateTime(deadlineValue);
-        } catch (CookieException exception) {
-            throw new CookieException(
-                    "A deadline date, time, or date and time must use yyyy-MM-dd, d/M/yyyy, "
-                            + "HHmm, yyyy-MM-dd HHmm, or d/M/yyyy HHmm.");
-        }
-        addTask(new Deadline(requireFileSafe(deadlineParts[0]), deadlineDateTime));
+        Parser.ParsedDeadline parsedDeadline = PARSER.parseDeadline(description);
+        addTask(new Deadline(parsedDeadline.description(), parsedDeadline.dateTime()));
     }
 
-    /** Adds an event after validating its description and both date or time markers. */
+    /** Adds an event after the parser validates its description and temporal values. */
     private static void addEvent(String description) throws CookieException {
-        String[] eventParts = description.split("\\s+/from\\s+", 2);
-        if (eventParts.length < 2 || eventParts[0].isBlank()) {
-            throw new CookieException("An event needs a description, a start time after /from, and an end time after /to.");
-        }
-
-        String[] timeParts = eventParts[1].split("\\s+/to\\s+", 2);
-        if (timeParts.length < 2 || timeParts[0].isBlank() || timeParts[1].isBlank()) {
-            throw new CookieException("An event needs a description, a start time after /from, and an end time after /to.");
-        }
-        String eventDescription = requireFileSafe(eventParts[0]);
-        String startValue = requireFileSafe(timeParts[0]);
-        String endValue = requireFileSafe(timeParts[1]);
-        DateTimeValue start;
-        DateTimeValue end;
-        try {
-            start = PARSER.parseDateTime(startValue);
-            end = PARSER.parseDateTime(endValue);
-        } catch (CookieException exception) {
-            throw new CookieException(
-                    "An event's start and end values must use yyyy-MM-dd, d/M/yyyy, HHmm, "
-                            + "yyyy-MM-dd HHmm, or d/M/yyyy HHmm.");
-        }
-        addTask(new Event(eventDescription, start, end));
+        Parser.ParsedEvent parsedEvent = PARSER.parseEvent(description);
+        addTask(new Event(parsedEvent.description(), parsedEvent.start(), parsedEvent.end()));
     }
 
     /** Displays deadlines and events that occur on the requested calendar date. */
@@ -179,7 +138,8 @@ public class Cookie {
                         listOnDate(parsedCommand.description());
                     }
                     case TODO -> {
-                        addTask(new Todo(requireFileSafe(PARSER.requireDescription(parsedCommand))));
+                        addTask(new Todo(
+                                PARSER.requireFileSafe(PARSER.requireDescription(parsedCommand))));
                     }
                     case DEADLINE -> {
                         addDeadline(parsedCommand.description());
