@@ -24,3 +24,27 @@ Prerequisites: JDK 25, update Intellij to the most recent version.
    ```
 
 **Warning:** Keep the `src\main\java` folder as the root folder for Java files (i.e., don't rename those folders or move Java files to another folder outside of this folder path), as this is the default location some tools (e.g., Gradle) expect to find Java files.
+
+## Building and running the fat JAR
+
+The project uses the Gradle Shadow plugin to package Cookie and its runtime dependencies into one executable JAR file.
+
+From the project root, create the JAR with:
+
+```powershell
+.\gradlew.bat clean shadowJar
+```
+
+The generated fat JAR is located at:
+
+```text
+build\libs\cookie.jar
+```
+
+Run Cookie from the project root with:
+
+```powershell
+java -jar .\build\libs\cookie.jar
+```
+
+Running it from the project root keeps Cookie's default `data\cookie.txt` storage path relative to this project. Enter commands such as `list` or `bye` in the console. The JAR can be rebuilt after source changes by running `shadowJar` again; `clean` is optional but ensures that the output is regenerated from scratch.

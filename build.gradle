@@ -48,7 +48,11 @@ jar {
 }
 
 shadowJar {
-    archiveFileName = 'duke.jar'
+    // Package runtime dependencies and the application classes into one runnable JAR.
+    archiveFileName = 'cookie.jar'
+    manifest {
+        attributes 'Main-Class': application.mainClass.get()
+    }
 }
 
 run {
