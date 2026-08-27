@@ -2,17 +2,29 @@ package cookie.command;
 
 /** Represents the valid commands for the Cookie application. */
 public enum Command {
+    /** Terminates the Cookie application. */
     BYE,
+    /** Displays all stored tasks. */
     LIST,
+    /** Marks a task as done. */
     MARK,
+    /** Marks a task as not done. */
     UNMARK,
+    /** Deletes a task. */
     DELETE,
+    /** Displays tasks occurring on a date. */
     ON,
+    /** Creates a todo task. */
     TODO,
+    /** Creates a deadline task. */
     DEADLINE,
+    /** Creates an event task. */
     EVENT;
 
-    /** Converts a string action into a Command enum
+    /** Converts a string action into a {@code Command} enum.
+     *
+     * @param action The command word to convert.
+     * @return The matching command.
      * @throws CookieException If the command is unrecognized.
      */
     public static Command fromString(String action) throws CookieException {

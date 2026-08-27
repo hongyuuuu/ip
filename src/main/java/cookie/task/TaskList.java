@@ -14,47 +14,77 @@ public class TaskList implements Iterable<Task> {
         this.tasks = new ArrayList<>(100);
     }
 
-    /** Creates a task list containing a copy of the supplied tasks. */
+    /** Creates a task list containing a copy of the supplied tasks.
+     *
+     * @param tasks The tasks to copy into this list.
+     */
     public TaskList(List<Task> tasks) {
         this.tasks = new ArrayList<>(tasks);
     }
 
-    /** Adds a task to the end of this list. */
+    /** Adds a task to the end of this list.
+     *
+     * @param task The task to add.
+     */
     public void add(Task task) {
         tasks.add(task);
     }
 
-    /** Inserts a task at the specified position. */
+    /** Inserts a task at the specified position.
+     *
+     * @param index The zero-based insertion position.
+     * @param task The task to insert.
+     */
     public void add(int index, Task task) {
         tasks.add(index, task);
     }
 
-    /** Marks the task at the specified position as done. */
+    /** Marks the task at the specified position as done.
+     *
+     * @param index The zero-based task position.
+     */
     public void mark(int index) {
         tasks.get(index).mark();
     }
 
-    /** Marks the task at the specified position as not done. */
+    /** Marks the task at the specified position as not done.
+     *
+     * @param index The zero-based task position.
+     */
     public void unmark(int index) {
         tasks.get(index).unmark();
     }
 
-    /** Returns the task at the specified position. */
+    /** Returns the task at the specified position.
+     *
+     * @param index The zero-based task position.
+     * @return The task at the specified position.
+     */
     public Task get(int index) {
         return tasks.get(index);
     }
 
-    /** Deletes and returns the task at the specified position. */
+    /** Deletes and returns the task at the specified position.
+     *
+     * @param index The zero-based task position.
+     * @return The deleted task.
+     */
     public Task delete(int index) {
         return tasks.remove(index);
     }
 
-    /** Returns the number of tasks in this list. */
+    /** Returns the number of tasks in this list.
+     *
+     * @return The number of tasks.
+     */
     public int size() {
         return tasks.size();
     }
 
-    /** Returns an iterator over tasks in their stored order. */
+    /** Returns an iterator over tasks in their stored order.
+     *
+     * @return An iterator over the tasks.
+     */
     @Override
     public Iterator<Task> iterator() {
         return tasks.iterator();

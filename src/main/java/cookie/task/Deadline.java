@@ -1,29 +1,43 @@
 package cookie.task;
 
-/** Represents a type of Task with a deadline. */
+/** Represents a task with a deadline. */
 public class Deadline extends Task {
 
     /** Stores the date or time by which the task should be completed. */
     protected DateTimeValue by;
 
-    /** Constructor to reuse superclass' constructor with the addition of a deadline. */
+    /** Creates a deadline task with the specified description and deadline.
+     *
+     * @param description The task description.
+     * @param by The date or time by which the task should be completed.
+     */
     public Deadline(String description, DateTimeValue by) {
         super(description);
         this.by = by;
     }
 
-    /** Returns the deadline's date or time. */
+    /** Returns the deadline's date or time.
+     *
+     * @return The deadline date or time.
+     */
     public DateTimeValue getBy() {
         return this.by;
     }
 
-    /** Returns the string for {@code Deadline} tasks to be logged */
+    /** Returns the string for {@code Deadline} tasks to be logged.
+     *
+     * @return The deadline's storage representation.
+     */
     @Override
     public String toFileFormat() {
         return "D | " + (this.isDone ? "Done | " : "Not Done | ") + this.description
                 + " | " + this.by.toStorageString();
     }
 
+    /** Returns the deadline's type marker, checkbox, description, and deadline.
+     *
+     * @return The deadline's display representation.
+     */
     @Override
     public String toString() {
         return "[D]" + super.toString() + " (by: " + by.toDisplayString() + ")";

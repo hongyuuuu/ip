@@ -27,12 +27,19 @@ public class Storage {
     /** The file used to persist Cookie's tasks. */
     private final Path filePath;
 
-    /** Creates storage backed by the specified file path. */
+    /** Creates storage backed by the specified file path.
+     *
+     * @param filePath The path of the task file.
+     */
     public Storage(String filePath) {
         this.filePath = Paths.get(filePath);
     }
 
-    /** Loads valid task records from the data file, or an empty list if it does not exist. */
+    /** Loads valid task records from the data file, or an empty list if it does not exist.
+     *
+     * @return The loaded tasks.
+     * @throws IOException If the data file cannot be read.
+     */
     public TaskList load() throws IOException {
         TaskList tasks = new TaskList();
         if (!Files.exists(filePath)) {
@@ -56,7 +63,11 @@ public class Storage {
         return tasks;
     }
 
-    /** Saves all tasks to the data file using a temporary file and an atomic replacement when supported. */
+    /** Saves all tasks to the data file using a temporary file and an atomic replacement when supported.
+     *
+     * @param tasks The tasks to save.
+     * @throws IOException If the data file cannot be written.
+     */
     public void save(TaskList tasks) throws IOException {
         Path temporaryFile = null;
         try {
