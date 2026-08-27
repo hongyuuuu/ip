@@ -1,0 +1,58 @@
+package cookie.task;
+
+import org.junit.jupiter.api.Test;
+
+import java.time.LocalDate;
+import java.time.LocalTime;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+/** Tests task state transitions and type-specific representations. */
+public class TaskTest {
+    @Test
+    public void todo_initialStateAndMarking_updatesStatusAndRepresentations() {
+        Todo todo = new Todo("buy milk");
+        assertEquals("buy milk", todo.getDescription());
+        assertFalse(todo.isDone());
+        assertEquals("[ ]", todo.getCheckbox());
+        assertEquals("[T][ ] buy milk", todo.toString());
+        assertEquals("T | Not Done | buy milk", todo.toFileFormat());
+
+        todo.mark();
+        assertTrue(todo.isDone());
+        assertEquals("[X]", todo.getCheckbox());
+        assertEquals("T | Done | buy milk", todo.toFileFormat());
+        todo.unmark();
+        assertFalse(todo.isDone());
+    }
+
+    @Test
+    public void deadline_formatsItsDateTimeAndPreservesCompletionState() {
+        DateTimeValue by = new DateTimeValue(LocalDate.of(2026, 8, 27), LocalTime.of(17, 5));
+        Deadline deadline = new Deadline("submit report", by);
+
+        assertEquals(by, deadline.getBy());
+        assertEquals("[D][ ] submit report (by: Aug 27 2026, 5:05 PM)", deadline.toString());
+        assertEquals("D | Not Done | submit report | 2026-08-27T17:05",
+                deadline.toFileFormat());
+        deadline.mark();
+        assertEquals("D | Done | submit report | 2026-08-27T17:05", deadline.toFileFormat());
+    }
+
+    @Test
+    public void event_formatsStartAndEndAndPreservesCompletionState() {
+        DateTimeValue start = new DateTimeValue(null, LocalTime.of(9, 0));
+        DateTimeValue end = new DateTimeValue(null, LocalTime.of(10, 30));
+        Event event = new Event("team meeting", start, end);
+
+        assertEquals(start, event.getStart());
+        assertEquals(end, event.getEnd());
+        assertEquals("[E][ ] team meeting (from: 9:00 AM to: 10:30 AM)", event.toString());
+        assertEquals("E | Not Done | team meeting | 09:00 to 10:30", event.toFileFormat());
+        event.mark();
+        assertTrue(event.isDone());
+        assertEquals("E | Done | team meeting | 09:00 to 10:30", event.toFileFormat());
+    }
+}
