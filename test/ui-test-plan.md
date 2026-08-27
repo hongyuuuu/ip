@@ -17,7 +17,8 @@ Each test case starts a fresh program process. The command is the program-launch
 | Completion state | 4--5, 25 | 11, 15--17, 22 |
 | Deadline and event | 6--7 | 10, 18, 23--24 |
 | Deletion | 19 | 20--22 |
-| Persistence | 27 | -- |
+| Persistence | 2, 4--7, 19, 25, 27, 32 | 28--31 |
+| Startup and file errors | 28, 31--32 | 29--30 |
 
 The expected output in every case is compared exactly, including spaces and separators.
 
@@ -1045,6 +1046,241 @@ Here are the task(s) in your list:
 1. [T][X] finish report
 2. [D][ ] return book (by: Sunday)
 3. [E][ ] project meeting (from: Mon 2pm to: 4pm)
+____________________________________________________________
+____________________________________________________________
+Bye. I'm going to sleep.
+____________________________________________________________
+```
+
+## Test case 28: Start without a data file or folder
+
+**Aim:** Verify that Cookie starts with an empty task list when the data file and its parent folder do not exist, then creates them when a task is added.
+
+**Command:** `java "-Dfile.encoding=UTF-8" "-Dstdout.encoding=UTF-8" -cp out Cookie`
+
+**Inputs:**
+```text
+list
+todo first task
+bye
+```
+
+**Expected output:**
+```text
+____________________________________________________________
+ ██████╗ ██████╗  ██████╗ ██╗  ██╗██╗███████╗
+██╔════╝██╔═══██╗██╔═══██╗██║ ██╔╝██║██╔════╝
+██║     ██║   ██║██║   ██║█████╔╝ ██║█████╗  
+██║     ██║   ██║██║   ██║██╔═██╗ ██║██╔══╝  
+╚██████╗╚██████╔╝╚██████╔╝██║  ██╗██║███████╗
+ ╚═════╝ ╚═════╝  ╚═════╝ ╚═╝  ╚═╝╚═╝╚══════╝
+Hello! I'm your favourite chatbot Cookie.
+What do you need today?
+____________________________________________________________
+____________________________________________________________
+Here are the task(s) in your list:
+____________________________________________________________
+____________________________________________________________
+Ok. I've added this task:
+   [T][ ] first task
+You have 1 task(s) now. Better start working.
+____________________________________________________________
+____________________________________________________________
+Bye. I'm going to sleep.
+____________________________________________________________
+```
+
+## Test case 29: Ignore malformed saved records
+
+**Aim:** Verify that malformed records and invalid statuses are ignored while valid records continue loading.
+
+**Saved data:**
+```text
+  T | Done | valid task  
+invalid record
+D | Maybe | bad | date
+E | Not Done | meeting | 2pm to 3pm
+T | Not Done
+D | Not Done | return book | Sunday
+```
+
+**Command:** `java "-Dfile.encoding=UTF-8" "-Dstdout.encoding=UTF-8" -cp out Cookie`
+
+**Inputs:**
+```text
+list
+bye
+```
+
+**Expected output:**
+```text
+____________________________________________________________
+ ██████╗ ██████╗  ██████╗ ██╗  ██╗██╗███████╗
+██╔════╝██╔═══██╗██╔═══██╗██║ ██╔╝██║██╔════╝
+██║     ██║   ██║██║   ██║█████╔╝ ██║█████╗  
+██║     ██║   ██║██║   ██║██╔═██╗ ██║██╔══╝  
+╚██████╗╚██████╔╝╚██████╔╝██║  ██╗██║███████╗
+ ╚═════╝ ╚═════╝  ╚═════╝ ╚═╝  ╚═╝╚═╝╚══════╝
+Hello! I'm your favourite chatbot Cookie.
+What do you need today?
+____________________________________________________________
+____________________________________________________________
+Here are the task(s) in your list:
+1. [T][X] valid task
+2. [E][ ] meeting (from: 2pm to: 3pm)
+3. [D][ ] return book (by: Sunday)
+____________________________________________________________
+____________________________________________________________
+Bye. I'm going to sleep.
+____________________________________________________________
+```
+
+## Test case 30: Reject the file delimiter in task details
+
+**Aim:** Verify that task details containing the file delimiter are rejected instead of creating records that cannot be loaded reliably.
+
+**Command:** `java "-Dfile.encoding=UTF-8" "-Dstdout.encoding=UTF-8" -cp out Cookie`
+
+**Inputs:**
+```text
+todo task | with delimiter
+deadline return book /by Sunday | night
+event team meeting /from Mon 2pm | Tue 2pm /to 4pm
+list
+bye
+```
+
+**Expected output:**
+```text
+____________________________________________________________
+ ██████╗ ██████╗  ██████╗ ██╗  ██╗██╗███████╗
+██╔════╝██╔═══██╗██╔═══██╗██║ ██╔╝██║██╔════╝
+██║     ██║   ██║██║   ██║█████╔╝ ██║█████╗  
+██║     ██║   ██║██║   ██║██╔═██╗ ██║██╔══╝  
+╚██████╗╚██████╔╝╚██████╔╝██║  ██╗██║███████╗
+ ╚═════╝ ╚═════╝  ╚═════╝ ╚═╝  ╚═╝╚═╝╚══════╝
+Hello! I'm your favourite chatbot Cookie.
+What do you need today?
+____________________________________________________________
+____________________________________________________________
+Bruh... Task details cannot contain '|'.
+____________________________________________________________
+____________________________________________________________
+Bruh... Task details cannot contain '|'.
+____________________________________________________________
+____________________________________________________________
+Bruh... Task details cannot contain '|'.
+____________________________________________________________
+____________________________________________________________
+Here are the task(s) in your list:
+____________________________________________________________
+____________________________________________________________
+Bye. I'm going to sleep.
+____________________________________________________________
+```
+
+## Test case 31: Load an empty file with blank lines
+
+**Aim:** Verify that an empty or whitespace-only saved record is ignored while valid records can still be loaded.
+
+**Saved data:**
+```text
+
+   
+
+T | Not Done | keep task
+
+```
+
+**Command:** `java "-Dfile.encoding=UTF-8" "-Dstdout.encoding=UTF-8" -cp out Cookie`
+
+**Inputs:**
+```text
+list
+bye
+```
+
+**Expected output:**
+```text
+____________________________________________________________
+ ██████╗ ██████╗  ██████╗ ██╗  ██╗██╗███████╗
+██╔════╝██╔═══██╗██╔═══██╗██║ ██╔╝██║██╔════╝
+██║     ██║   ██║██║   ██║█████╔╝ ██║█████╗  
+██║     ██║   ██║██║   ██║██╔═██╗ ██║██╔══╝  
+╚██████╗╚██████╔╝╚██████╔╝██║  ██╗██║███████╗
+ ╚═════╝ ╚═════╝  ╚═════╝ ╚═╝  ╚═╝╚═╝╚══════╝
+Hello! I'm your favourite chatbot Cookie.
+What do you need today?
+____________________________________________________________
+____________________________________________________________
+Here are the task(s) in your list:
+1. [T][ ] keep task
+____________________________________________________________
+____________________________________________________________
+Bye. I'm going to sleep.
+____________________________________________________________
+```
+
+## Test case 32: Save and load tasks across a restart
+
+**Aim:** Verify that a task added and marked in one Cookie process is restored with its completion state after restarting Cookie.
+
+**Command:** `java "-Dfile.encoding=UTF-8" "-Dstdout.encoding=UTF-8" -cp out Cookie`
+
+**Inputs:**
+```text
+todo round trip task
+mark 1
+bye
+```
+
+**Expected output:**
+```text
+____________________________________________________________
+ ██████╗ ██████╗  ██████╗ ██╗  ██╗██╗███████╗
+██╔════╝██╔═══██╗██╔═══██╗██║ ██╔╝██║██╔════╝
+██║     ██║   ██║██║   ██║█████╔╝ ██║█████╗  
+██║     ██║   ██║██║   ██║██╔═██╗ ██║██╔══╝  
+╚██████╗╚██████╔╝╚██████╔╝██║  ██╗██║███████╗
+ ╚═════╝ ╚═════╝  ╚═════╝ ╚═╝  ╚═╝╚═╝╚══════╝
+Hello! I'm your favourite chatbot Cookie.
+What do you need today?
+____________________________________________________________
+____________________________________________________________
+Ok. I've added this task:
+   [T][ ] round trip task
+You have 1 task(s) now. Better start working.
+____________________________________________________________
+____________________________________________________________
+Wow you actually got work done...
+   [T][X] round trip task
+____________________________________________________________
+____________________________________________________________
+Bye. I'm going to sleep.
+____________________________________________________________
+```
+
+**Restart inputs:**
+```text
+list
+bye
+```
+
+**Expected restart output:**
+```text
+____________________________________________________________
+ ██████╗ ██████╗  ██████╗ ██╗  ██╗██╗███████╗
+██╔════╝██╔═══██╗██╔═══██╗██║ ██╔╝██║██╔════╝
+██║     ██║   ██║██║   ██║█████╔╝ ██║█████╗  
+██║     ██║   ██║██║   ██║██╔═██╗ ██║██╔══╝  
+╚██████╗╚██████╔╝╚██████╔╝██║  ██╗██║███████╗
+ ╚═════╝ ╚═════╝  ╚═════╝ ╚═╝  ╚═╝╚═╝╚══════╝
+Hello! I'm your favourite chatbot Cookie.
+What do you need today?
+____________________________________________________________
+____________________________________________________________
+Here are the task(s) in your list:
+1. [T][X] round trip task
 ____________________________________________________________
 ____________________________________________________________
 Bye. I'm going to sleep.

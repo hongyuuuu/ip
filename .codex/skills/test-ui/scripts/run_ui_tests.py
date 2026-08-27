@@ -23,10 +23,13 @@ class TestCase:
     inputs: str
     expected: str
     saved_data: str = ""
+    restart_inputs: str = ""
+    restart_expected: str = ""
 
 
 FIELD_PATTERN = re.compile(
-    r"^\*\*(Aim|Command|Inputs|Expected output|Saved data):\*\*\s*(.*)$", re.IGNORECASE
+    r"^\*\*(Aim|Command|Inputs|Expected output|Saved data|Restart inputs|Expected restart output):\*\*\s*(.*)$",
+    re.IGNORECASE,
 )
 HEADING_PATTERN = re.compile(r"^##\s+Test case(?:\s+\d+)?\s*:\s*(.+)$", re.IGNORECASE)
 
@@ -72,6 +75,12 @@ def parse_plan(path: Path) -> list[TestCase]:
             raise ValueError(
                 f"test case '{current.get('title', '<unnamed>')}' is missing: {', '.join(missing)}"
             )
+        has_restart_inputs = "restart_inputs" in current
+        has_restart_expected = "restart_expected" in current
+        if has_restart_inputs != has_restart_expected:
+            raise ValueError(
+                f"test case '{current.get('title', '<unnamed>')}' must provide both restart inputs and restart expected output"
+            )
         cases.append(TestCase(**current))
 
     while index < len(lines):
@@ -88,7 +97,7 @@ def parse_plan(path: Path) -> list[TestCase]:
                 raise ValueError(f"field appears before a test-case heading on line {index + 1}")
             key = field.group(1).lower().replace(" ", "_")
             value = field.group(2).strip()
-            if key in ("inputs", "expected_output", "saved_data"):
+            if key in ("inputs", "expected_output", "saved_data", "restart_inputs", "expected_restart_output"):
                 if value:
                     raise ValueError(f"{field.group(1)} must be followed by a fenced code block")
                 value, index = _read_code_block(lines, index + 1)
@@ -96,8 +105,12 @@ def parse_plan(path: Path) -> list[TestCase]:
                     current["expected"] = value
                 elif key == "inputs":
                     current["inputs"] = value
-                else:
+                elif key == "saved_data":
                     current["saved_data"] = value
+                elif key == "restart_inputs":
+                    current["restart_inputs"] = value
+                else:
+                    current["restart_expected"] = value
                 continue
             if not value:
                 index += 1
@@ -125,12 +138,12 @@ def _display(value: str) -> str:
     return value if value else "<empty>\n"
 
 
-def run_case(case: TestCase, timeout: float, working_dir: Path) -> tuple[str, int | None, bool]:
-    """Run one case and return captured output, exit code, and whether it timed out."""
+def run_process(command: str, inputs: str, timeout: float, working_dir: Path) -> tuple[str, int | None, bool]:
+    """Run one process and return captured output, exit code, and whether it timed out."""
     try:
         process = subprocess.run(
-            case.command,
-            input=case.inputs,
+            command,
+            input=inputs,
             text=True,
             encoding="utf-8",
             capture_output=True,
@@ -145,6 +158,16 @@ def run_case(case: TestCase, timeout: float, working_dir: Path) -> tuple[str, in
         if isinstance(output, bytes):
             output = output.decode(errors="replace")
         return output + f"\n<timed out after {timeout:g} seconds>\n", None, True
+
+
+def run_case(
+    case: TestCase, timeout: float, working_dir: Path
+) -> list[tuple[str, int | None, bool]]:
+    """Run one case, optionally restarting Cookie in the same working directory."""
+    results = [run_process(case.command, case.inputs, timeout, working_dir)]
+    if case.restart_inputs:
+        results.append(run_process(case.command, case.restart_inputs, timeout, working_dir))
+    return results
 
 
 def main() -> int:
@@ -177,18 +200,29 @@ def main() -> int:
                 data_file = working_dir / "data" / "cookie.txt"
                 data_file.parent.mkdir(parents=True, exist_ok=True)
                 data_file.write_text(case.saved_data, encoding="utf-8")
-            actual, exit_code, timed_out = run_case(case, args.timeout, working_dir)
-        passed = not timed_out and exit_code == 0 and _normalize(actual) == _normalize(case.expected)
+            results = run_case(case, args.timeout, working_dir)
+        expected_outputs = [case.expected]
+        if case.restart_inputs:
+            expected_outputs.append(case.restart_expected)
+        passed = all(
+            not timed_out and exit_code == 0 and _normalize(actual) == _normalize(expected)
+            for (actual, exit_code, timed_out), expected in zip(results, expected_outputs)
+        )
 
         record()
         record(f"=== Test case {number}: {case.title} ===")
         record(f"Aim: {case.aim}")
         record(f"Command: {case.command}")
-        record("Console input:")
-        record(_display(case.inputs).rstrip("\n"))
-        record("Console output:")
-        record(_display(actual).rstrip("\n"))
-        record(f"Exit code: {exit_code if exit_code is not None else '<timeout>'}")
+        for phase, ((actual, exit_code, timed_out), inputs) in enumerate(
+            zip(results, [case.inputs, case.restart_inputs]), start=1
+        ):
+            if len(results) > 1:
+                record(f"Process {phase}:")
+            record("Console input:")
+            record(_display(inputs).rstrip("\n"))
+            record("Console output:")
+            record(_display(actual).rstrip("\n"))
+            record(f"Exit code: {exit_code if exit_code is not None else '<timeout>'}")
 
         if passed:
             record("Result: PASS")
@@ -197,10 +231,22 @@ def main() -> int:
         record("Result: FAIL")
         record("Expected output:")
         record(_display(case.expected).rstrip("\n"))
+        failed_result = next(
+            (
+                (actual, exit_code, timed_out),
+                expected,
+            )
+            for (actual, exit_code, timed_out), expected in zip(results, expected_outputs)
+            if timed_out or exit_code != 0 or _normalize(actual) != _normalize(expected)
+        )
+        actual, exit_code, timed_out = failed_result[0]
         if timed_out:
             record(f"Failure: process exceeded the {args.timeout:g}-second timeout.")
         elif exit_code != 0:
             record(f"Failure: process exited with code {exit_code}.")
+        else:
+            record("Expected output:")
+            record(_display(failed_result[1]).rstrip("\n"))
         break
     else:
         record()
