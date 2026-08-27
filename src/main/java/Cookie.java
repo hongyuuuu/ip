@@ -4,7 +4,6 @@ import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.time.format.ResolverStyle;
-import java.util.ArrayList;
 import java.util.Locale;
 import java.util.Scanner;
 
@@ -22,7 +21,7 @@ import java.nio.file.StandardCopyOption;
 /** The main entry point for the Cookie command-line application. */
 public class Cookie {
     private static final String SEPARATOR = "____________________________________________________________";
-    private static final ArrayList<Task> LST = new ArrayList<>(100);
+    private static final TaskList LST = new TaskList();
     private static final Path FILE_PATH = Paths.get(".", "data", "cookie.txt");
     private static final DateTimeFormatter ISO_DATE_TIME_INPUT_FORMAT =
             DateTimeFormatter.ofPattern("uuuu-MM-dd HHmm", Locale.ENGLISH)
