@@ -1,3 +1,7 @@
+package cookie.task;
+
+import cookie.command.CookieException;
+
 public enum TaskType {
     TODO("T"),
     DEADLINE("D"),

@@ -1,3 +1,5 @@
+package cookie.task;
+
 /** Represents the most basic task type, no datetime attached */
 public class Todo extends Task {
 

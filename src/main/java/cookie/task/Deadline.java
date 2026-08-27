@@ -1,3 +1,5 @@
+package cookie.task;
+
 /** Represents a type of Task with a deadline. */
 public class Deadline extends Task {
 

@@ -1,3 +1,5 @@
+package cookie.command;
+
 /** Represents the valid commands for the Cookie application. */
 public enum Command {
     BYE,
