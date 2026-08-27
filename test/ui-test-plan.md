@@ -15,9 +15,9 @@ Each test case starts a fresh program process. The command is the program-launch
 | Application flow | 1 | 9, 12--14 |
 | Todo and list | 2--3 | 8, 13, 26 |
 | Completion state | 4--5, 25 | 11, 15--17, 22 |
-| Deadline and event | 6--7 | 10, 18, 23--24 |
+| Deadline and event | 6--7, 33--35, 38 | 10, 18, 23--24, 36--37 |
 | Deletion | 19 | 20--22 |
-| Persistence | 2, 4--7, 19, 25, 27, 32 | 28--31 |
+| Persistence | 2, 4--7, 19, 25, 27, 32--34 | 28--31 |
 | Startup and file errors | 28, 31--32 | 29--30 |
 
 The expected output in every case is compared exactly, including spaces and separators.
@@ -218,13 +218,13 @@ ____________________________________________________________
 
 ## Test case 6: Add a deadline task
 
-**Aim:** Verify that a `deadline` command separates the task description from its `/by` date and displays both values.
+**Aim:** Verify that a `deadline` command accepts a slash-formatted date and time, then displays both values in a readable format.
 
 **Command:** `java "-Dfile.encoding=UTF-8" "-Dstdout.encoding=UTF-8" -cp out Cookie`
 
 **Inputs:**
 ```text
-deadline return book /by Sunday
+deadline return book /by 2/12/2019 1800
 bye
 ```
 
@@ -242,7 +242,7 @@ What do you need today?
 ____________________________________________________________
 ____________________________________________________________
 Ok. I've added this task:
-   [D][ ] return book (by: Sunday)
+   [D][ ] return book (by: Dec 02 2019, 6:00 PM)
 You have 1 task(s) now. Better start working.
 ____________________________________________________________
 ____________________________________________________________
@@ -252,13 +252,13 @@ ____________________________________________________________
 
 ## Test case 7: Add an event task
 
-**Aim:** Verify that an `event` command separates the task description from its `/from` and `/to` times and displays all three values.
+**Aim:** Verify that an `event` command accepts date-times after its `/from` and `/to` markers and displays all three values.
 
 **Command:** `java "-Dfile.encoding=UTF-8" "-Dstdout.encoding=UTF-8" -cp out Cookie`
 
 **Inputs:**
 ```text
-event project meeting /from Mon 2pm /to 4pm
+event project meeting /from 2/12/2019 1400 /to 2/12/2019 1600
 bye
 ```
 
@@ -276,7 +276,7 @@ What do you need today?
 ____________________________________________________________
 ____________________________________________________________
 Ok. I've added this task:
-   [E][ ] project meeting (from: Mon 2pm to: 4pm)
+   [E][ ] project meeting (from: Dec 02 2019, 2:00 PM to: Dec 02 2019, 4:00 PM)
 You have 1 task(s) now. Better start working.
 ____________________________________________________________
 ____________________________________________________________
@@ -350,7 +350,7 @@ ____________________________________________________________
 
 ## Test case 10: Reject an incomplete deadline
 
-**Aim:** Verify that a `deadline` without a `/by` date displays an error and does not add a task.
+**Aim:** Verify that a `deadline` without a `/by` date and time displays an error and does not add a task.
 
 **Command:** `java "-Dfile.encoding=UTF-8" "-Dstdout.encoding=UTF-8" -cp out Cookie`
 
@@ -374,7 +374,7 @@ Hello! I'm your favourite chatbot Cookie.
 What do you need today?
 ____________________________________________________________
 ____________________________________________________________
-Bruh... A deadline needs a description and a date after /by.
+Bruh... A deadline needs a description and a date and time after /by.
 ____________________________________________________________
 ____________________________________________________________
 Here are the task(s) in your list:
@@ -650,8 +650,8 @@ ____________________________________________________________
 **Inputs:**
 ```text
 todo buy groceries
-deadline submit report /by Friday
-event team meeting /from Mon 2pm /to 3pm
+deadline submit report /by 2019-12-06 1700
+event team meeting /from 2019-12-06 1400 /to 2019-12-06 1500
 delete 2
 list
 bye
@@ -676,23 +676,23 @@ You have 1 task(s) now. Better start working.
 ____________________________________________________________
 ____________________________________________________________
 Ok. I've added this task:
-   [D][ ] submit report (by: Friday)
+   [D][ ] submit report (by: Dec 06 2019, 5:00 PM)
 You have 2 task(s) now. Better start working.
 ____________________________________________________________
 ____________________________________________________________
 Ok. I've added this task:
-   [E][ ] team meeting (from: Mon 2pm to: 3pm)
+   [E][ ] team meeting (from: Dec 06 2019, 2:00 PM to: Dec 06 2019, 3:00 PM)
 You have 3 task(s) now. Better start working.
 ____________________________________________________________
 ____________________________________________________________
 You're welcome. I've gotten rid of this task for you:
-   [D][ ] submit report (by: Friday)
+   [D][ ] submit report (by: Dec 06 2019, 5:00 PM)
 Now you have 2 task(s) in the list.
 ____________________________________________________________
 ____________________________________________________________
 Here are the task(s) in your list:
 1. [T][ ] buy groceries
-2. [E][ ] team meeting (from: Mon 2pm to: 3pm)
+2. [E][ ] team meeting (from: Dec 06 2019, 2:00 PM to: Dec 06 2019, 3:00 PM)
 ____________________________________________________________
 ____________________________________________________________
 Bye. I'm going to sleep.
@@ -820,15 +820,15 @@ ____________________________________________________________
 
 ## Test case 23: Reject malformed deadline fields
 
-**Aim:** Verify that a deadline requires both a description and a date after the `/by` marker, and that invalid input does not add a task.
+**Aim:** Verify that a deadline requires both a description and a date-time after the `/by` marker, and that invalid input does not add a task.
 
 **Command:** `java "-Dfile.encoding=UTF-8" "-Dstdout.encoding=UTF-8" -cp out Cookie`
 
 **Inputs:**
 ```text
-deadline /by Friday
+deadline /by 6/12/2019 1700
 deadline submit report /by
-deadline submit report by Friday
+deadline submit report by 6/12/2019 1700
 list
 bye
 ```
@@ -846,13 +846,13 @@ Hello! I'm your favourite chatbot Cookie.
 What do you need today?
 ____________________________________________________________
 ____________________________________________________________
-Bruh... A deadline needs a description and a date after /by.
+Bruh... A deadline needs a description and a date and time after /by.
 ____________________________________________________________
 ____________________________________________________________
-Bruh... A deadline needs a description and a date after /by.
+Bruh... A deadline needs a description and a date and time after /by.
 ____________________________________________________________
 ____________________________________________________________
-Bruh... A deadline needs a description and a date after /by.
+Bruh... A deadline needs a description and a date and time after /by.
 ____________________________________________________________
 ____________________________________________________________
 Here are the task(s) in your list:
@@ -918,8 +918,8 @@ ____________________________________________________________
 
 **Inputs:**
 ```text
-deadline submit report /by Friday
-event team meeting /from Mon 2pm /to 3pm
+deadline submit report /by 2019-12-06 1700
+event team meeting /from 2019-12-06 1400 /to 2019-12-06 1500
 mark 1
 mark 2
 unmark 2
@@ -941,30 +941,30 @@ What do you need today?
 ____________________________________________________________
 ____________________________________________________________
 Ok. I've added this task:
-   [D][ ] submit report (by: Friday)
+   [D][ ] submit report (by: Dec 06 2019, 5:00 PM)
 You have 1 task(s) now. Better start working.
 ____________________________________________________________
 ____________________________________________________________
 Ok. I've added this task:
-   [E][ ] team meeting (from: Mon 2pm to: 3pm)
+   [E][ ] team meeting (from: Dec 06 2019, 2:00 PM to: Dec 06 2019, 3:00 PM)
 You have 2 task(s) now. Better start working.
 ____________________________________________________________
 ____________________________________________________________
 Wow you actually got work done...
-   [D][X] submit report (by: Friday)
+   [D][X] submit report (by: Dec 06 2019, 5:00 PM)
 ____________________________________________________________
 ____________________________________________________________
 Wow you actually got work done...
-   [E][X] team meeting (from: Mon 2pm to: 3pm)
+   [E][X] team meeting (from: Dec 06 2019, 2:00 PM to: Dec 06 2019, 3:00 PM)
 ____________________________________________________________
 ____________________________________________________________
 I can't believe you lied to me...
-   [E][ ] team meeting (from: Mon 2pm to: 3pm)
+   [E][ ] team meeting (from: Dec 06 2019, 2:00 PM to: Dec 06 2019, 3:00 PM)
 ____________________________________________________________
 ____________________________________________________________
 Here are the task(s) in your list:
-1. [D][X] submit report (by: Friday)
-2. [E][ ] team meeting (from: Mon 2pm to: 3pm)
+1. [D][X] submit report (by: Dec 06 2019, 5:00 PM)
+2. [E][ ] team meeting (from: Dec 06 2019, 2:00 PM to: Dec 06 2019, 3:00 PM)
 ____________________________________________________________
 ____________________________________________________________
 Bye. I'm going to sleep.
@@ -1017,8 +1017,8 @@ ____________________________________________________________
 **Saved data:**
 ```text
 T | Done | finish report
-D | Not Done | return book | Sunday
-E | Not Done | project meeting | Mon 2pm to 4pm
+D | Not Done | return book | 2019-12-02T18:00
+E | Not Done | project meeting | 2019-12-02T14:00 to 2019-12-02T16:00
 ```
 
 **Command:** `java "-Dfile.encoding=UTF-8" "-Dstdout.encoding=UTF-8" -cp out Cookie`
@@ -1044,8 +1044,8 @@ ____________________________________________________________
 ____________________________________________________________
 Here are the task(s) in your list:
 1. [T][X] finish report
-2. [D][ ] return book (by: Sunday)
-3. [E][ ] project meeting (from: Mon 2pm to: 4pm)
+2. [D][ ] return book (by: Dec 02 2019, 6:00 PM)
+3. [E][ ] project meeting (from: Dec 02 2019, 2:00 PM to: Dec 02 2019, 4:00 PM)
 ____________________________________________________________
 ____________________________________________________________
 Bye. I'm going to sleep.
@@ -1099,9 +1099,9 @@ ____________________________________________________________
   T | Done | valid task  
 invalid record
 D | Maybe | bad | date
-E | Not Done | meeting | 2pm to 3pm
+E | Not Done | meeting | 2019-12-02T14:00 to 2019-12-02T15:00
 T | Not Done
-D | Not Done | return book | Sunday
+D | Not Done | return book | 2019-12-02T18:00
 ```
 
 **Command:** `java "-Dfile.encoding=UTF-8" "-Dstdout.encoding=UTF-8" -cp out Cookie`
@@ -1127,8 +1127,8 @@ ____________________________________________________________
 ____________________________________________________________
 Here are the task(s) in your list:
 1. [T][X] valid task
-2. [E][ ] meeting (from: 2pm to: 3pm)
-3. [D][ ] return book (by: Sunday)
+2. [E][ ] meeting (from: Dec 02 2019, 2:00 PM to: Dec 02 2019, 3:00 PM)
+3. [D][ ] return book (by: Dec 02 2019, 6:00 PM)
 ____________________________________________________________
 ____________________________________________________________
 Bye. I'm going to sleep.
@@ -1144,8 +1144,8 @@ ____________________________________________________________
 **Inputs:**
 ```text
 todo task | with delimiter
-deadline return book /by Sunday | night
-event team meeting /from Mon 2pm | Tue 2pm /to 4pm
+deadline return book /by 2/12/2019 1800 | night
+event team meeting /from 2019-12-02 1400 | Tue 2pm /to 2019-12-02 1600
 list
 bye
 ```
@@ -1281,6 +1281,339 @@ ____________________________________________________________
 ____________________________________________________________
 Here are the task(s) in your list:
 1. [T][X] round trip task
+____________________________________________________________
+____________________________________________________________
+Bye. I'm going to sleep.
+____________________________________________________________
+```
+
+## Test case 33: Save and load a deadline date-time
+
+**Aim:** Verify that a deadline date-time is saved in a canonical format and restored with the same readable display after restarting Cookie.
+
+**Command:** `java "-Dfile.encoding=UTF-8" "-Dstdout.encoding=UTF-8" -cp out Cookie`
+
+**Inputs:**
+```text
+deadline submit report /by 2019-12-06 1700
+bye
+```
+
+**Expected output:**
+```text
+____________________________________________________________
+ ██████╗ ██████╗  ██████╗ ██╗  ██╗██╗███████╗
+██╔════╝██╔═══██╗██╔═══██╗██║ ██╔╝██║██╔════╝
+██║     ██║   ██║██║   ██║█████╔╝ ██║█████╗  
+██║     ██║   ██║██║   ██║██╔═██╗ ██║██╔══╝  
+╚██████╗╚██████╔╝╚██████╔╝██║  ██╗██║███████╗
+ ╚═════╝ ╚═════╝  ╚═════╝ ╚═╝  ╚═╝╚═╝╚══════╝
+Hello! I'm your favourite chatbot Cookie.
+What do you need today?
+____________________________________________________________
+____________________________________________________________
+Ok. I've added this task:
+   [D][ ] submit report (by: Dec 06 2019, 5:00 PM)
+You have 1 task(s) now. Better start working.
+____________________________________________________________
+____________________________________________________________
+Bye. I'm going to sleep.
+____________________________________________________________
+```
+
+## Test case 34: Save and load an event date-time
+
+**Aim:** Verify that an event's date-time interval is saved and restored with the same readable display after restarting Cookie.
+
+**Command:** `java "-Dfile.encoding=UTF-8" "-Dstdout.encoding=UTF-8" -cp out Cookie`
+
+**Inputs:**
+```text
+event project meeting /from 2019-12-02 1400 /to 2019-12-02 1600
+bye
+```
+
+**Expected output:**
+```text
+____________________________________________________________
+ ██████╗ ██████╗  ██████╗ ██╗  ██╗██╗███████╗
+██╔════╝██╔═══██╗██╔═══██╗██║ ██╔╝██║██╔════╝
+██║     ██║   ██║██║   ██║█████╔╝ ██║█████╗  
+██║     ██║   ██║██║   ██║██╔═██╗ ██║██╔══╝  
+╚██████╗╚██████╔╝╚██████╔╝██║  ██╗██║███████╗
+ ╚═════╝ ╚═════╝  ╚═════╝ ╚═╝  ╚═╝╚═╝╚══════╝
+Hello! I'm your favourite chatbot Cookie.
+What do you need today?
+____________________________________________________________
+____________________________________________________________
+Ok. I've added this task:
+   [E][ ] project meeting (from: Dec 02 2019, 2:00 PM to: Dec 02 2019, 4:00 PM)
+You have 1 task(s) now. Better start working.
+____________________________________________________________
+____________________________________________________________
+Bye. I'm going to sleep.
+____________________________________________________________
+```
+
+**Restart inputs:**
+```text
+list
+bye
+```
+
+**Expected restart output:**
+```text
+____________________________________________________________
+ ██████╗ ██████╗  ██████╗ ██╗  ██╗██╗███████╗
+██╔════╝██╔═══██╗██╔═══██╗██║ ██╔╝██║██╔════╝
+██║     ██║   ██║██║   ██║█████╔╝ ██║█████╗  
+██║     ██║   ██║██║   ██║██╔═██╗ ██║██╔══╝  
+╚██████╗╚██████╔╝╚██████╔╝██║  ██╗██║███████╗
+ ╚═════╝ ╚═════╝  ╚═════╝ ╚═╝  ╚═╝╚═╝╚══════╝
+Hello! I'm your favourite chatbot Cookie.
+What do you need today?
+____________________________________________________________
+____________________________________________________________
+Here are the task(s) in your list:
+1. [E][ ] project meeting (from: Dec 02 2019, 2:00 PM to: Dec 02 2019, 4:00 PM)
+____________________________________________________________
+____________________________________________________________
+Bye. I'm going to sleep.
+____________________________________________________________
+```
+
+## Test case 35: List tasks occurring on a date
+
+**Aim:** Verify that `on` lists deadlines on the requested date and events whose intervals overlap that date, while preserving original task numbers.
+
+**Command:** `java "-Dfile.encoding=UTF-8" "-Dstdout.encoding=UTF-8" -cp out Cookie`
+
+**Inputs:**
+```text
+deadline submit report /by 2019-12-06 1700
+deadline next report /by 2019-12-07 0900
+event team meeting /from 2019-12-06 1400 /to 2019-12-06 1600
+event overnight deployment /from 2019-12-05 2300 /to 2019-12-06 0100
+on 2019-12-06
+on 2019-12-08
+bye
+```
+
+**Expected output:**
+```text
+____________________________________________________________
+ ██████╗ ██████╗  ██████╗ ██╗  ██╗██╗███████╗
+██╔════╝██╔═══██╗██╔═══██╗██║ ██╔╝██║██╔════╝
+██║     ██║   ██║██║   ██║█████╔╝ ██║█████╗  
+██║     ██║   ██║██║   ██║██╔═██╗ ██║██╔══╝  
+╚██████╗╚██████╔╝╚██████╔╝██║  ██╗██║███████╗
+ ╚═════╝ ╚═════╝  ╚═════╝ ╚═╝  ╚═╝╚═╝╚══════╝
+Hello! I'm your favourite chatbot Cookie.
+What do you need today?
+____________________________________________________________
+____________________________________________________________
+Ok. I've added this task:
+   [D][ ] submit report (by: Dec 06 2019, 5:00 PM)
+You have 1 task(s) now. Better start working.
+____________________________________________________________
+____________________________________________________________
+Ok. I've added this task:
+   [D][ ] next report (by: Dec 07 2019, 9:00 AM)
+You have 2 task(s) now. Better start working.
+____________________________________________________________
+____________________________________________________________
+Ok. I've added this task:
+   [E][ ] team meeting (from: Dec 06 2019, 2:00 PM to: Dec 06 2019, 4:00 PM)
+You have 3 task(s) now. Better start working.
+____________________________________________________________
+____________________________________________________________
+Ok. I've added this task:
+   [E][ ] overnight deployment (from: Dec 05 2019, 11:00 PM to: Dec 06 2019, 1:00 AM)
+You have 4 task(s) now. Better start working.
+____________________________________________________________
+____________________________________________________________
+Here are the task(s) on Dec 06 2019:
+1. [D][ ] submit report (by: Dec 06 2019, 5:00 PM)
+3. [E][ ] team meeting (from: Dec 06 2019, 2:00 PM to: Dec 06 2019, 4:00 PM)
+4. [E][ ] overnight deployment (from: Dec 05 2019, 11:00 PM to: Dec 06 2019, 1:00 AM)
+____________________________________________________________
+____________________________________________________________
+Here are the task(s) on Dec 08 2019:
+____________________________________________________________
+____________________________________________________________
+Bye. I'm going to sleep.
+____________________________________________________________
+```
+
+## Test case 36: Reject invalid event and date-query values
+
+**Aim:** Verify that malformed event date-times and invalid `on` dates are rejected without changing the task list.
+
+**Command:** `java "-Dfile.encoding=UTF-8" "-Dstdout.encoding=UTF-8" -cp out Cookie`
+
+**Inputs:**
+```text
+event invalid meeting /from 2019-02-30 1400 /to 2019-02-30 1600
+on 2019-02-30
+on
+list
+bye
+```
+
+**Expected output:**
+```text
+____________________________________________________________
+ ██████╗ ██████╗  ██████╗ ██╗  ██╗██╗███████╗
+██╔════╝██╔═══██╗██╔═══██╗██║ ██╔╝██║██╔════╝
+██║     ██║   ██║██║   ██║█████╔╝ ██║█████╗  
+██║     ██║   ██║██║   ██║██╔═██╗ ██║██╔══╝  
+╚██████╗╚██████╔╝╚██████╔╝██║  ██╗██║███████╗
+ ╚═════╝ ╚═════╝  ╚═════╝ ╚═╝  ╚═╝╚═╝╚══════╝
+Hello! I'm your favourite chatbot Cookie.
+What do you need today?
+____________________________________________________________
+____________________________________________________________
+Bruh... An event's start and end values must use yyyy-MM-dd, d/M/yyyy, HHmm, yyyy-MM-dd HHmm, or d/M/yyyy HHmm.
+____________________________________________________________
+____________________________________________________________
+Bruh... A date must use yyyy-MM-dd or d/M/yyyy.
+____________________________________________________________
+____________________________________________________________
+Bruh... Usage: on <date>.
+____________________________________________________________
+____________________________________________________________
+Here are the task(s) in your list:
+____________________________________________________________
+____________________________________________________________
+Bye. I'm going to sleep.
+____________________________________________________________
+```
+
+**Other inputs:**
+```text
+list
+bye
+```
+
+**Other output:**
+```text
+____________________________________________________________
+ ██████╗ ██████╗  ██████╗ ██╗  ██╗██╗███████╗
+██╔════╝██╔═══██╗██╔═══██╗██║ ██╔╝██║██╔════╝
+██║     ██║   ██║██║   ██║█████╔╝ ██║█████╗  
+██║     ██║   ██║██║   ██║██╔═██╗ ██║██╔══╝  
+╚██████╗╚██████╔╝╚██████╔╝██║  ██╗██║███████╗
+ ╚═════╝ ╚═════╝  ╚═════╝ ╚═╝  ╚═╝╚═╝╚══════╝
+Hello! I'm your favourite chatbot Cookie.
+What do you need today?
+____________________________________________________________
+____________________________________________________________
+Here are the task(s) in your list:
+1. [D][ ] submit report (by: Dec 06 2019, 5:00 PM)
+____________________________________________________________
+____________________________________________________________
+Bye. I'm going to sleep.
+____________________________________________________________
+```
+
+## Test case 37: Reject invalid deadline date-times
+
+**Aim:** Verify that invalid calendar dates, invalid times, and unsupported date separators are rejected without adding tasks.
+
+**Command:** `java "-Dfile.encoding=UTF-8" "-Dstdout.encoding=UTF-8" -cp out Cookie`
+
+**Inputs:**
+```text
+deadline invalid date /by 2019-02-30 1800
+deadline invalid time /by 2019-12-02 2460
+deadline invalid format /by 2019/12/02 1800
+list
+bye
+```
+
+**Expected output:**
+```text
+____________________________________________________________
+ ██████╗ ██████╗  ██████╗ ██╗  ██╗██╗███████╗
+██╔════╝██╔═══██╗██╔═══██╗██║ ██╔╝██║██╔════╝
+██║     ██║   ██║██║   ██║█████╔╝ ██║█████╗  
+██║     ██║   ██║██║   ██║██╔═██╗ ██║██╔══╝  
+╚██████╗╚██████╔╝╚██████╔╝██║  ██╗██║███████╗
+ ╚═════╝ ╚═════╝  ╚═════╝ ╚═╝  ╚═╝╚═╝╚══════╝
+Hello! I'm your favourite chatbot Cookie.
+What do you need today?
+____________________________________________________________
+____________________________________________________________
+Bruh... A deadline date, time, or date and time must use yyyy-MM-dd, d/M/yyyy, HHmm, yyyy-MM-dd HHmm, or d/M/yyyy HHmm.
+____________________________________________________________
+____________________________________________________________
+Bruh... A deadline date, time, or date and time must use yyyy-MM-dd, d/M/yyyy, HHmm, yyyy-MM-dd HHmm, or d/M/yyyy HHmm.
+____________________________________________________________
+____________________________________________________________
+Bruh... A deadline date, time, or date and time must use yyyy-MM-dd, d/M/yyyy, HHmm, yyyy-MM-dd HHmm, or d/M/yyyy HHmm.
+____________________________________________________________
+____________________________________________________________
+Here are the task(s) in your list:
+____________________________________________________________
+____________________________________________________________
+Bye. I'm going to sleep.
+____________________________________________________________
+```
+
+## Test case 38: Accept optional date and time components
+
+**Aim:** Verify that deadlines and events accept date-only, time-only, and combined date-time values.
+
+**Command:** `java "-Dfile.encoding=UTF-8" "-Dstdout.encoding=UTF-8" -cp out Cookie`
+
+**Inputs:**
+```text
+deadline submit report /by 2019-12-06
+deadline submit invoice /by 1800
+event project day /from 2019-12-07 /to 2019-12-07
+event project hour /from 0900 /to 1000
+list
+bye
+```
+
+**Expected output:**
+```text
+____________________________________________________________
+ ██████╗ ██████╗  ██████╗ ██╗  ██╗██╗███████╗
+██╔════╝██╔═══██╗██╔═══██╗██║ ██╔╝██║██╔════╝
+██║     ██║   ██║██║   ██║█████╔╝ ██║█████╗  
+██║     ██║   ██║██║   ██║██╔═██╗ ██║██╔══╝  
+╚██████╗╚██████╔╝╚██████╔╝██║  ██╗██║███████╗
+ ╚═════╝ ╚═════╝  ╚═════╝ ╚═╝  ╚═╝╚═╝╚══════╝
+Hello! I'm your favourite chatbot Cookie.
+What do you need today?
+____________________________________________________________
+____________________________________________________________
+Ok. I've added this task:
+   [D][ ] submit report (by: Dec 06 2019)
+You have 1 task(s) now. Better start working.
+____________________________________________________________
+____________________________________________________________
+Ok. I've added this task:
+   [D][ ] submit invoice (by: 6:00 PM)
+You have 2 task(s) now. Better start working.
+____________________________________________________________
+____________________________________________________________
+Ok. I've added this task:
+   [E][ ] project day (from: Dec 07 2019 to: Dec 07 2019)
+You have 3 task(s) now. Better start working.
+____________________________________________________________
+____________________________________________________________
+Ok. I've added this task:
+   [E][ ] project hour (from: 9:00 AM to: 10:00 AM)
+You have 4 task(s) now. Better start working.
+____________________________________________________________
+____________________________________________________________
+Here are the task(s) in your list:
+1. [D][ ] submit report (by: Dec 06 2019)
+2. [D][ ] submit invoice (by: 6:00 PM)
+3. [E][ ] project day (from: Dec 07 2019 to: Dec 07 2019)
+4. [E][ ] project hour (from: 9:00 AM to: 10:00 AM)
 ____________________________________________________________
 ____________________________________________________________
 Bye. I'm going to sleep.
