@@ -1,3 +1,5 @@
+package cookie.task;
+
 /** Serves as a template for more specific task types */
 public abstract class Task {
     /** The task description */
@@ -20,6 +22,11 @@ public abstract class Task {
     /** Returns task description */
     public String getDescription() {
         return this.description;
+    }
+
+    /** Returns whether the task has been completed. */
+    public boolean isDone() {
+        return this.isDone;
     }
 
     /** Marks task as done, updates status isDone to true */

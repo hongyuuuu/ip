@@ -1,3 +1,5 @@
+package cookie.command;
+
 /** Represents an error caused by invalid input to Cookie. */
 public class CookieException extends Exception {
 

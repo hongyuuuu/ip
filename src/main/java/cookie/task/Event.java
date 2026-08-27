@@ -1,3 +1,5 @@
+package cookie.task;
+
 /** Represents a type of Task with a start and end date or time. */
 public class Event extends Task {
 

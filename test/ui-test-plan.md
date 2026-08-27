@@ -3,7 +3,7 @@
 Run these tests from the repository root with Java 25. Compile the current source before running the plan:
 
 ```text
-javac -encoding UTF-8 -d out src/main/java/*.java
+javac -encoding UTF-8 -d out src/main/java/cookie/Cookie.java src/main/java/cookie/command/*.java src/main/java/cookie/task/*.java src/main/java/cookie/storage/*.java src/main/java/cookie/ui/*.java
 ```
 
 Each test case starts a fresh program process. The command is the program-launch command; the fenced input block is sent to standard input exactly as written.
@@ -26,7 +26,7 @@ The expected output in every case is compared exactly, including spaces and sepa
 
 **Aim:** Verify that Cookie displays its greeting and exits cleanly when the user enters `bye`.
 
-**Command:** `java "-Dfile.encoding=UTF-8" "-Dstdout.encoding=UTF-8" -cp out Cookie`
+**Command:** `java "-Dfile.encoding=UTF-8" "-Dstdout.encoding=UTF-8" -cp out cookie.Cookie`
 
 **Inputs:**
 ```text
@@ -54,7 +54,7 @@ ____________________________________________________________
 
 **Aim:** Verify that a `todo` command creates an incomplete todo task and confirms the addition.
 
-**Command:** `java "-Dfile.encoding=UTF-8" "-Dstdout.encoding=UTF-8" -cp out Cookie`
+**Command:** `java "-Dfile.encoding=UTF-8" "-Dstdout.encoding=UTF-8" -cp out cookie.Cookie`
 
 **Inputs:**
 ```text
@@ -88,7 +88,7 @@ ____________________________________________________________
 
 **Aim:** Verify that the `list` command displays all tasks with their numbering and incomplete status.
 
-**Command:** `java "-Dfile.encoding=UTF-8" "-Dstdout.encoding=UTF-8" -cp out Cookie`
+**Command:** `java "-Dfile.encoding=UTF-8" "-Dstdout.encoding=UTF-8" -cp out cookie.Cookie`
 
 **Inputs:**
 ```text
@@ -127,7 +127,7 @@ ____________________________________________________________
 
 **Aim:** Verify that `mark 1` marks the first task as complete and displays the completed status.
 
-**Command:** `java "-Dfile.encoding=UTF-8" "-Dstdout.encoding=UTF-8" -cp out Cookie`
+**Command:** `java "-Dfile.encoding=UTF-8" "-Dstdout.encoding=UTF-8" -cp out cookie.Cookie`
 
 **Inputs:**
 ```text
@@ -171,7 +171,7 @@ ____________________________________________________________
 
 **Aim:** Verify that `unmark 1` changes a completed task back to incomplete and displays the updated status.
 
-**Command:** `java "-Dfile.encoding=UTF-8" "-Dstdout.encoding=UTF-8" -cp out Cookie`
+**Command:** `java "-Dfile.encoding=UTF-8" "-Dstdout.encoding=UTF-8" -cp out cookie.Cookie`
 
 **Inputs:**
 ```text
@@ -220,7 +220,7 @@ ____________________________________________________________
 
 **Aim:** Verify that a `deadline` command accepts a slash-formatted date and time, then displays both values in a readable format.
 
-**Command:** `java "-Dfile.encoding=UTF-8" "-Dstdout.encoding=UTF-8" -cp out Cookie`
+**Command:** `java "-Dfile.encoding=UTF-8" "-Dstdout.encoding=UTF-8" -cp out cookie.Cookie`
 
 **Inputs:**
 ```text
@@ -254,7 +254,7 @@ ____________________________________________________________
 
 **Aim:** Verify that an `event` command accepts date-times after its `/from` and `/to` markers and displays all three values.
 
-**Command:** `java "-Dfile.encoding=UTF-8" "-Dstdout.encoding=UTF-8" -cp out Cookie`
+**Command:** `java "-Dfile.encoding=UTF-8" "-Dstdout.encoding=UTF-8" -cp out cookie.Cookie`
 
 **Inputs:**
 ```text
@@ -288,7 +288,7 @@ ____________________________________________________________
 
 **Aim:** Verify that an empty `todo` description displays an error and allows the user to continue.
 
-**Command:** `java "-Dfile.encoding=UTF-8" "-Dstdout.encoding=UTF-8" -cp out Cookie`
+**Command:** `java "-Dfile.encoding=UTF-8" "-Dstdout.encoding=UTF-8" -cp out cookie.Cookie`
 
 **Inputs:**
 ```text
@@ -320,7 +320,7 @@ ____________________________________________________________
 
 **Aim:** Verify that an unrecognized command displays an error and does not terminate Cookie.
 
-**Command:** `java "-Dfile.encoding=UTF-8" "-Dstdout.encoding=UTF-8" -cp out Cookie`
+**Command:** `java "-Dfile.encoding=UTF-8" "-Dstdout.encoding=UTF-8" -cp out cookie.Cookie`
 
 **Inputs:**
 ```text
@@ -352,7 +352,7 @@ ____________________________________________________________
 
 **Aim:** Verify that a `deadline` without a `/by` date and time displays an error and does not add a task.
 
-**Command:** `java "-Dfile.encoding=UTF-8" "-Dstdout.encoding=UTF-8" -cp out Cookie`
+**Command:** `java "-Dfile.encoding=UTF-8" "-Dstdout.encoding=UTF-8" -cp out cookie.Cookie`
 
 **Inputs:**
 ```text
@@ -388,7 +388,7 @@ ____________________________________________________________
 
 **Aim:** Verify that marking a task number that is not in the list displays an error and does not terminate Cookie.
 
-**Command:** `java "-Dfile.encoding=UTF-8" "-Dstdout.encoding=UTF-8" -cp out Cookie`
+**Command:** `java "-Dfile.encoding=UTF-8" "-Dstdout.encoding=UTF-8" -cp out cookie.Cookie`
 
 **Inputs:**
 ```text
@@ -420,7 +420,7 @@ ____________________________________________________________
 
 **Aim:** Verify that a blank input line displays an error and allows the user to continue.
 
-**Command:** `java "-Dfile.encoding=UTF-8" "-Dstdout.encoding=UTF-8" -cp out Cookie`
+**Command:** `java "-Dfile.encoding=UTF-8" "-Dstdout.encoding=UTF-8" -cp out cookie.Cookie`
 
 **Inputs:**
 ```text
@@ -452,7 +452,7 @@ ____________________________________________________________
 
 **Aim:** Verify that the `list` command rejects unexpected arguments.
 
-**Command:** `java "-Dfile.encoding=UTF-8" "-Dstdout.encoding=UTF-8" -cp out Cookie`
+**Command:** `java "-Dfile.encoding=UTF-8" "-Dstdout.encoding=UTF-8" -cp out cookie.Cookie`
 
 **Inputs:**
 ```text
@@ -484,7 +484,7 @@ ____________________________________________________________
 
 **Aim:** Verify that the `bye` command rejects unexpected arguments and remains available afterward.
 
-**Command:** `java "-Dfile.encoding=UTF-8" "-Dstdout.encoding=UTF-8" -cp out Cookie`
+**Command:** `java "-Dfile.encoding=UTF-8" "-Dstdout.encoding=UTF-8" -cp out cookie.Cookie`
 
 **Inputs:**
 ```text
@@ -516,7 +516,7 @@ ____________________________________________________________
 
 **Aim:** Verify that `mark` requires a task number.
 
-**Command:** `java "-Dfile.encoding=UTF-8" "-Dstdout.encoding=UTF-8" -cp out Cookie`
+**Command:** `java "-Dfile.encoding=UTF-8" "-Dstdout.encoding=UTF-8" -cp out cookie.Cookie`
 
 **Inputs:**
 ```text
@@ -548,7 +548,7 @@ ____________________________________________________________
 
 **Aim:** Verify that `unmark` requires a task number.
 
-**Command:** `java "-Dfile.encoding=UTF-8" "-Dstdout.encoding=UTF-8" -cp out Cookie`
+**Command:** `java "-Dfile.encoding=UTF-8" "-Dstdout.encoding=UTF-8" -cp out cookie.Cookie`
 
 **Inputs:**
 ```text
@@ -580,7 +580,7 @@ ____________________________________________________________
 
 **Aim:** Verify that a task number must be a positive whole number.
 
-**Command:** `java "-Dfile.encoding=UTF-8" "-Dstdout.encoding=UTF-8" -cp out Cookie`
+**Command:** `java "-Dfile.encoding=UTF-8" "-Dstdout.encoding=UTF-8" -cp out cookie.Cookie`
 
 **Inputs:**
 ```text
@@ -612,7 +612,7 @@ ____________________________________________________________
 
 **Aim:** Verify that an `event` requires a description, a `/from` start time, and a `/to` end time.
 
-**Command:** `java "-Dfile.encoding=UTF-8" "-Dstdout.encoding=UTF-8" -cp out Cookie`
+**Command:** `java "-Dfile.encoding=UTF-8" "-Dstdout.encoding=UTF-8" -cp out cookie.Cookie`
 
 **Inputs:**
 ```text
@@ -645,7 +645,7 @@ ____________________________________________________________
 
 **Aim:** Verify that `delete` removes the selected task, reports the removed task and remaining count, and renumbers the remaining tasks.
 
-**Command:** `java "-Dfile.encoding=UTF-8" "-Dstdout.encoding=UTF-8" -cp out Cookie`
+**Command:** `java "-Dfile.encoding=UTF-8" "-Dstdout.encoding=UTF-8" -cp out cookie.Cookie`
 
 **Inputs:**
 ```text
@@ -703,7 +703,7 @@ ____________________________________________________________
 
 **Aim:** Verify that `delete` rejects a task number that is not in the list and keeps Cookie running.
 
-**Command:** `java "-Dfile.encoding=UTF-8" "-Dstdout.encoding=UTF-8" -cp out Cookie`
+**Command:** `java "-Dfile.encoding=UTF-8" "-Dstdout.encoding=UTF-8" -cp out cookie.Cookie`
 
 **Inputs:**
 ```text
@@ -735,7 +735,7 @@ ____________________________________________________________
 
 **Aim:** Verify that `delete` requires a task number.
 
-**Command:** `java "-Dfile.encoding=UTF-8" "-Dstdout.encoding=UTF-8" -cp out Cookie`
+**Command:** `java "-Dfile.encoding=UTF-8" "-Dstdout.encoding=UTF-8" -cp out cookie.Cookie`
 
 **Inputs:**
 ```text
@@ -767,7 +767,7 @@ ____________________________________________________________
 
 **Aim:** Verify that zero, negative, out-of-range, and extra task-number arguments are rejected while the existing task remains unchanged.
 
-**Command:** `java "-Dfile.encoding=UTF-8" "-Dstdout.encoding=UTF-8" -cp out Cookie`
+**Command:** `java "-Dfile.encoding=UTF-8" "-Dstdout.encoding=UTF-8" -cp out cookie.Cookie`
 
 **Inputs:**
 ```text
@@ -822,7 +822,7 @@ ____________________________________________________________
 
 **Aim:** Verify that a deadline requires both a description and a date-time after the `/by` marker, and that invalid input does not add a task.
 
-**Command:** `java "-Dfile.encoding=UTF-8" "-Dstdout.encoding=UTF-8" -cp out Cookie`
+**Command:** `java "-Dfile.encoding=UTF-8" "-Dstdout.encoding=UTF-8" -cp out cookie.Cookie`
 
 **Inputs:**
 ```text
@@ -866,7 +866,7 @@ ____________________________________________________________
 
 **Aim:** Verify that an event requires a description, a non-empty `/from` time, a non-empty `/to` time, and correctly ordered markers without adding a task on error.
 
-**Command:** `java "-Dfile.encoding=UTF-8" "-Dstdout.encoding=UTF-8" -cp out Cookie`
+**Command:** `java "-Dfile.encoding=UTF-8" "-Dstdout.encoding=UTF-8" -cp out cookie.Cookie`
 
 **Inputs:**
 ```text
@@ -914,7 +914,7 @@ ____________________________________________________________
 
 **Aim:** Verify that `mark` and `unmark` preserve the type-specific details of deadline and event tasks.
 
-**Command:** `java "-Dfile.encoding=UTF-8" "-Dstdout.encoding=UTF-8" -cp out Cookie`
+**Command:** `java "-Dfile.encoding=UTF-8" "-Dstdout.encoding=UTF-8" -cp out cookie.Cookie`
 
 **Inputs:**
 ```text
@@ -975,7 +975,7 @@ ____________________________________________________________
 
 **Aim:** Verify that leading, trailing, and repeated whitespace around commands does not change the command or stored task description.
 
-**Command:** `java "-Dfile.encoding=UTF-8" "-Dstdout.encoding=UTF-8" -cp out Cookie`
+**Command:** `java "-Dfile.encoding=UTF-8" "-Dstdout.encoding=UTF-8" -cp out cookie.Cookie`
 
 **Inputs:**
 ```text
@@ -1021,7 +1021,7 @@ D | Not Done | return book | 2019-12-02T18:00
 E | Not Done | project meeting | 2019-12-02T14:00 to 2019-12-02T16:00
 ```
 
-**Command:** `java "-Dfile.encoding=UTF-8" "-Dstdout.encoding=UTF-8" -cp out Cookie`
+**Command:** `java "-Dfile.encoding=UTF-8" "-Dstdout.encoding=UTF-8" -cp out cookie.Cookie`
 
 **Inputs:**
 ```text
@@ -1056,7 +1056,7 @@ ____________________________________________________________
 
 **Aim:** Verify that Cookie starts with an empty task list when the data file and its parent folder do not exist, then creates them when a task is added.
 
-**Command:** `java "-Dfile.encoding=UTF-8" "-Dstdout.encoding=UTF-8" -cp out Cookie`
+**Command:** `java "-Dfile.encoding=UTF-8" "-Dstdout.encoding=UTF-8" -cp out cookie.Cookie`
 
 **Inputs:**
 ```text
@@ -1104,7 +1104,7 @@ T | Not Done
 D | Not Done | return book | 2019-12-02T18:00
 ```
 
-**Command:** `java "-Dfile.encoding=UTF-8" "-Dstdout.encoding=UTF-8" -cp out Cookie`
+**Command:** `java "-Dfile.encoding=UTF-8" "-Dstdout.encoding=UTF-8" -cp out cookie.Cookie`
 
 **Inputs:**
 ```text
@@ -1139,7 +1139,7 @@ ____________________________________________________________
 
 **Aim:** Verify that task details containing the file delimiter are rejected instead of creating records that cannot be loaded reliably.
 
-**Command:** `java "-Dfile.encoding=UTF-8" "-Dstdout.encoding=UTF-8" -cp out Cookie`
+**Command:** `java "-Dfile.encoding=UTF-8" "-Dstdout.encoding=UTF-8" -cp out cookie.Cookie`
 
 **Inputs:**
 ```text
@@ -1192,7 +1192,7 @@ T | Not Done | keep task
 
 ```
 
-**Command:** `java "-Dfile.encoding=UTF-8" "-Dstdout.encoding=UTF-8" -cp out Cookie`
+**Command:** `java "-Dfile.encoding=UTF-8" "-Dstdout.encoding=UTF-8" -cp out cookie.Cookie`
 
 **Inputs:**
 ```text
@@ -1225,7 +1225,7 @@ ____________________________________________________________
 
 **Aim:** Verify that a task added and marked in one Cookie process is restored with its completion state after restarting Cookie.
 
-**Command:** `java "-Dfile.encoding=UTF-8" "-Dstdout.encoding=UTF-8" -cp out Cookie`
+**Command:** `java "-Dfile.encoding=UTF-8" "-Dstdout.encoding=UTF-8" -cp out cookie.Cookie`
 
 **Inputs:**
 ```text
@@ -1291,7 +1291,7 @@ ____________________________________________________________
 
 **Aim:** Verify that a deadline date-time is saved in a canonical format and restored with the same readable display after restarting Cookie.
 
-**Command:** `java "-Dfile.encoding=UTF-8" "-Dstdout.encoding=UTF-8" -cp out Cookie`
+**Command:** `java "-Dfile.encoding=UTF-8" "-Dstdout.encoding=UTF-8" -cp out cookie.Cookie`
 
 **Inputs:**
 ```text
@@ -1325,7 +1325,7 @@ ____________________________________________________________
 
 **Aim:** Verify that an event's date-time interval is saved and restored with the same readable display after restarting Cookie.
 
-**Command:** `java "-Dfile.encoding=UTF-8" "-Dstdout.encoding=UTF-8" -cp out Cookie`
+**Command:** `java "-Dfile.encoding=UTF-8" "-Dstdout.encoding=UTF-8" -cp out cookie.Cookie`
 
 **Inputs:**
 ```text
@@ -1386,7 +1386,7 @@ ____________________________________________________________
 
 **Aim:** Verify that `on` lists deadlines on the requested date and events whose intervals overlap that date, while preserving original task numbers.
 
-**Command:** `java "-Dfile.encoding=UTF-8" "-Dstdout.encoding=UTF-8" -cp out Cookie`
+**Command:** `java "-Dfile.encoding=UTF-8" "-Dstdout.encoding=UTF-8" -cp out cookie.Cookie`
 
 **Inputs:**
 ```text
@@ -1449,7 +1449,7 @@ ____________________________________________________________
 
 **Aim:** Verify that malformed event date-times and invalid `on` dates are rejected without changing the task list.
 
-**Command:** `java "-Dfile.encoding=UTF-8" "-Dstdout.encoding=UTF-8" -cp out Cookie`
+**Command:** `java "-Dfile.encoding=UTF-8" "-Dstdout.encoding=UTF-8" -cp out cookie.Cookie`
 
 **Inputs:**
 ```text
@@ -1520,7 +1520,7 @@ ____________________________________________________________
 
 **Aim:** Verify that invalid calendar dates, invalid times, and unsupported date separators are rejected without adding tasks.
 
-**Command:** `java "-Dfile.encoding=UTF-8" "-Dstdout.encoding=UTF-8" -cp out Cookie`
+**Command:** `java "-Dfile.encoding=UTF-8" "-Dstdout.encoding=UTF-8" -cp out cookie.Cookie`
 
 **Inputs:**
 ```text
@@ -1564,7 +1564,7 @@ ____________________________________________________________
 
 **Aim:** Verify that deadlines and events accept date-only, time-only, and combined date-time values.
 
-**Command:** `java "-Dfile.encoding=UTF-8" "-Dstdout.encoding=UTF-8" -cp out Cookie`
+**Command:** `java "-Dfile.encoding=UTF-8" "-Dstdout.encoding=UTF-8" -cp out cookie.Cookie`
 
 **Inputs:**
 ```text

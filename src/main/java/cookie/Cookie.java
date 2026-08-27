@@ -1,3 +1,15 @@
+package cookie;
+
+import cookie.command.CookieException;
+import cookie.command.Parser;
+import cookie.storage.Storage;
+import cookie.task.Deadline;
+import cookie.task.Event;
+import cookie.task.Task;
+import cookie.task.TaskList;
+import cookie.task.Todo;
+import cookie.ui.Ui;
+
 import java.io.IOException;
 import java.time.LocalDate;
 import java.util.Scanner;
@@ -49,7 +61,7 @@ public class Cookie {
     /** Marks task as done and prints message indicating a successful mark as done */
     private void markTask(int idx) {
         Task task = tasks.get(idx);
-        boolean wasDone = task.isDone;
+        boolean wasDone = task.isDone();
         tasks.mark(idx);
         if (!saveTasks()) {
             if (wasDone) {
@@ -65,7 +77,7 @@ public class Cookie {
     /** Unmarks task as done and prints message indicating a successful unmark as done */
     private void unmarkTask(int idx) {
         Task task = tasks.get(idx);
-        boolean wasDone = task.isDone;
+        boolean wasDone = task.isDone();
         tasks.unmark(idx);
         if (!saveTasks()) {
             if (wasDone) {
