@@ -7,22 +7,13 @@ import java.time.format.ResolverStyle;
 import java.util.Locale;
 import java.util.Scanner;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.IOException;
-
-import java.nio.charset.StandardCharsets;
-import java.nio.file.AtomicMoveNotSupportedException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 
 /** The main entry point for the Cookie command-line application. */
 public class Cookie {
-    private static final TaskList LST = new TaskList();
+    private static TaskList LST = new TaskList();
     private static final Ui UI = new Ui();
-    private static final Path FILE_PATH = Paths.get(".", "data", "cookie.txt");
+    private static final Storage STORAGE = new Storage("./data/cookie.txt");
     private static final DateTimeFormatter ISO_DATE_TIME_INPUT_FORMAT =
             DateTimeFormatter.ofPattern("uuuu-MM-dd HHmm", Locale.ENGLISH)
                     .withResolverStyle(ResolverStyle.STRICT);
@@ -239,117 +230,24 @@ public class Cookie {
         UI.showTasksOnDate(date, LST);
     }
 
-    /** Saves the current task list to the hard disk and reports whether it succeeded. */
+    /** Saves the current task list to the data file and reports whether it succeeded. */
     private static boolean saveTasks() {
-        Path temporaryFile = null;
         try {
-            Path parentDir = FILE_PATH.getParent();
-            if (parentDir != null) {
-                Files.createDirectories(parentDir);
-            }
-
-            temporaryFile = parentDir == null
-                    ? Files.createTempFile("cookie-", ".tmp")
-                    : Files.createTempFile(parentDir, ".cookie-", ".tmp");
-            try (BufferedWriter writer = Files.newBufferedWriter(temporaryFile, StandardCharsets.UTF_8)) {
-                for (Task task : LST) {
-                    writer.write(task.toFileFormat());
-                    writer.newLine();
-                }
-            }
-            try {
-                Files.move(temporaryFile, FILE_PATH, StandardCopyOption.ATOMIC_MOVE,
-                        StandardCopyOption.REPLACE_EXISTING);
-            } catch (AtomicMoveNotSupportedException exception) {
-                Files.move(temporaryFile, FILE_PATH, StandardCopyOption.REPLACE_EXISTING);
-            }
+            STORAGE.save(LST);
             return true;
-        } catch (IOException e) {
-            if (temporaryFile != null) {
-                try {
-                    Files.deleteIfExists(temporaryFile);
-                } catch (IOException ignored) {
-                    // Preserve the original save error for the user.
-                }
-            }
-            UI.showSaveError(e.getMessage());
+        } catch (IOException exception) {
+            UI.showSaveError(exception.getMessage());
             return false;
         }
     }
 
-    /** Loads valid task records from the hard-disk file when Cookie starts. */
+    /** Loads valid task records from the data file when Cookie starts. */
     private static void loadTasks() {
-        if (!Files.exists(FILE_PATH)) {
-            return;
+        try {
+            LST = STORAGE.load();
+        } catch (IOException exception) {
+            UI.showLoadError(exception.getMessage());
         }
-
-        try (BufferedReader reader = Files.newBufferedReader(FILE_PATH, StandardCharsets.UTF_8)) {
-            String line;
-            while ((line = reader.readLine()) != null) {
-                if (line.isBlank()) {
-                    continue;
-                }
-
-                try {
-                    LST.add(parseTask(line));
-                } catch (CookieException exception) {
-                    // Ignore malformed records so one bad line does not prevent startup.
-                }
-            }
-        } catch (IOException e) {
-            UI.showLoadError(e.getMessage());
-        }
-    }
-
-    /** Converts one saved task record into a task object. */
-    private static Task parseTask(String line) throws CookieException {
-        String[] fields = line.trim().split("\\s*\\|\\s*", -1);
-        if (fields.length < 3) {
-            throw new CookieException("A saved task record is incomplete.");
-        }
-
-        Task task;
-        switch (TaskType.fromCode(fields[0])) {
-        case TODO -> {
-            if (fields.length != 3 || fields[2].isBlank()) {
-                throw new CookieException("A saved todo record is malformed.");
-            }
-            task = new Todo(fields[2]);
-        }
-        case DEADLINE -> {
-            if (fields.length != 4 || fields[2].isBlank() || fields[3].isBlank()) {
-                throw new CookieException("A saved deadline record is malformed.");
-            }
-            try {
-                task = new Deadline(fields[2], DateTimeValue.parseStorageValue(fields[3]));
-            } catch (DateTimeParseException exception) {
-                throw new CookieException("A saved deadline record is malformed.");
-            }
-        }
-        case EVENT -> {
-            if (fields.length != 4 || fields[2].isBlank()) {
-                throw new CookieException("A saved event record is malformed.");
-            }
-            String[] times = fields[3].split("\\s+to\\s+", 2);
-            if (times.length != 2 || times[0].isBlank() || times[1].isBlank()) {
-                throw new CookieException("A saved event record is malformed.");
-            }
-            try {
-                task = new Event(fields[2], DateTimeValue.parseStorageValue(times[0]),
-                        DateTimeValue.parseStorageValue(times[1]));
-            } catch (DateTimeParseException exception) {
-                throw new CookieException("A saved event record is malformed.");
-            }
-        }
-        default -> throw new CookieException("A saved task record is malformed.");
-        }
-
-        if ("Done".equalsIgnoreCase(fields[1])) {
-            task.mark();
-        } else if (!"Not Done".equalsIgnoreCase(fields[1])) {
-            throw new CookieException("A saved task record has an invalid status.");
-        }
-        return task;
     }
 
     /** Reads and responds to commands until the user enters {@code bye}. */
