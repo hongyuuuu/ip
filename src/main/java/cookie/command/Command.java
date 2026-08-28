@@ -14,6 +14,8 @@ public enum Command {
     DELETE,
     /** Displays tasks occurring on a date. */
     ON,
+    /** Finds tasks whose descriptions contain a specified keyword. */
+    FIND,
     /** Creates a todo task. */
     TODO,
     /** Creates a deadline task. */

@@ -89,4 +89,22 @@ public class UiTest {
         assertTrue(!printed.contains("ordinary todo"));
         assertTrue(!printed.contains("non-matching event"));
     }
+
+    @Test
+    public void showMatchingTasks_listsOnlyTasksContainingKeyword() {
+        Ui ui = new Ui();
+        TaskList tasks = new TaskList();
+        tasks.add(new Todo("read book"));
+        tasks.add(new Deadline("return book", new DateTimeValue(
+                LocalDate.of(2026, 8, 27), LocalTime.of(17, 0))));
+        tasks.add(new Todo("buy groceries"));
+
+        ui.showMatchingTasks("book", tasks);
+
+        String printed = output.toString(StandardCharsets.UTF_8);
+        assertTrue(printed.contains("Here are the matching tasks in your list:"));
+        assertTrue(printed.contains("1. [T][ ] read book"));
+        assertTrue(printed.contains("2. [D][ ] return book"));
+        assertTrue(!printed.contains("buy groceries"));
+    }
 }

@@ -122,6 +122,11 @@ public class Cookie {
         ui.showTasksOnDate(date, tasks);
     }
 
+    /** Displays tasks whose descriptions contain the requested keyword. */
+    private void findTasks(String keyword) {
+        ui.showMatchingTasks(keyword, tasks);
+    }
+
     /** Saves the current task list to the data file and reports whether it succeeded. */
     private boolean saveTasks() {
         try {
@@ -164,6 +169,10 @@ public class Cookie {
                     case ON -> {
                         parser.requireSingleArgument(parsedCommand, "on <date>");
                         listOnDate(parsedCommand.description());
+                    }
+                    case FIND -> {
+                        parser.requireSingleArgument(parsedCommand, "find <keyword>");
+                        findTasks(parsedCommand.argument(0));
                     }
                     case TODO -> {
                         addTask(new Todo(

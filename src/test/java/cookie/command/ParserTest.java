@@ -38,10 +38,12 @@ public class ParserTest {
     public void validationMethods_acceptAndRejectExpectedArguments() throws CookieException {
         Parser.ParsedCommand noArguments = parser.parse("list");
         Parser.ParsedCommand oneArgument = parser.parse("on 2026-08-27");
+        Parser.ParsedCommand findKeyword = parser.parse("find book");
         Parser.ParsedCommand manyArguments = parser.parse("list now");
 
         parser.requireNoArguments(noArguments);
         parser.requireSingleArgument(oneArgument, "on <date>");
+        parser.requireSingleArgument(findKeyword, "find <keyword>");
         assertEquals("2026-08-27", parser.requireDescription(parser.parse("todo 2026-08-27")));
         assertEquals("safe", parser.requireFileSafe("safe"));
 
@@ -51,6 +53,9 @@ public class ParserTest {
         assertEquals("Usage: on <date>.", assertThrows(
                 CookieException.class, () -> parser.requireSingleArgument(tooManyArguments,
                         "on <date>")).getMessage());
+        assertEquals("Usage: find <keyword>.", assertThrows(
+                CookieException.class, () -> parser.requireSingleArgument(
+                        parser.parse("find book now"), "find <keyword>")).getMessage());
         assertEquals("A todo task needs a description.", assertThrows(
                 CookieException.class, () -> parser.requireDescription(parser.parse("todo")))
                 .getMessage());

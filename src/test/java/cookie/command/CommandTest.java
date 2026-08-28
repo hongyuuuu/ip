@@ -12,6 +12,7 @@ public class CommandTest {
         assertEquals(Command.TODO, Command.fromString("todo"));
         assertEquals(Command.DEADLINE, Command.fromString("DeAdLiNe"));
         assertEquals(Command.EVENT, Command.fromString("EVENT"));
+        assertEquals(Command.FIND, Command.fromString("find"));
     }
 
     @Test
