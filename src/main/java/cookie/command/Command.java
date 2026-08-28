@@ -8,6 +8,7 @@ public enum Command {
     UNMARK,
     DELETE,
     ON,
+    FIND,
     TODO,
     DEADLINE,
     EVENT;

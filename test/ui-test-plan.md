@@ -15,7 +15,8 @@ Each test case starts a fresh program process. The command is the program-launch
 | Application flow | 1 | 9, 12--14 |
 | Todo and list | 2--3 | 8, 13, 26 |
 | Completion state | 4--5, 25 | 11, 15--17, 22 |
-| Deadline and event | 6--7, 33--35, 38 | 10, 18, 23--24, 36--37 |
+| Deadline and event | 6--7, 33--35, 38--39 | 10, 18, 23--24, 36--37 |
+| Find | 39 | 40 |
 | Deletion | 19 | 20--22 |
 | Persistence | 2, 4--7, 19, 25, 27, 32--34 | 28--31 |
 | Startup and file errors | 28, 31--32 | 29--30 |
@@ -1614,6 +1615,98 @@ Here are the task(s) in your list:
 2. [D][ ] submit invoice (by: 6:00 PM)
 3. [E][ ] project day (from: Dec 07 2019 to: Dec 07 2019)
 4. [E][ ] project hour (from: 9:00 AM to: 10:00 AM)
+____________________________________________________________
+____________________________________________________________
+Bye. I'm going to sleep.
+____________________________________________________________
+```
+
+## Test case 39: Find tasks by keyword
+
+**Aim:** Verify that `find` displays tasks whose descriptions contain the keyword, preserves their original task numbers, and includes matching tasks of different types.
+
+**Command:** `java "-Dfile.encoding=UTF-8" "-Dstdout.encoding=UTF-8" -cp out cookie.Cookie`
+
+**Inputs:**
+```text
+todo read book
+deadline return book /by 2019-06-06
+todo buy groceries
+find book
+bye
+```
+
+**Expected output:**
+```text
+____________________________________________________________
+ ██████╗ ██████╗  ██████╗ ██╗  ██╗██╗███████╗
+██╔════╝██╔═══██╗██╔═══██╗██║ ██╔╝██║██╔════╝
+██║     ██║   ██║██║   ██║█████╔╝ ██║█████╗  
+██║     ██║   ██║██║   ██║██╔═██╗ ██║██╔══╝  
+╚██████╗╚██████╔╝╚██████╔╝██║  ██╗██║███████╗
+ ╚═════╝ ╚═════╝  ╚═════╝ ╚═╝  ╚═╝╚═╝╚══════╝
+Hello! I'm your favourite chatbot Cookie.
+What do you need today?
+____________________________________________________________
+____________________________________________________________
+Ok. I've added this task:
+   [T][ ] read book
+You have 1 task(s) now. Better start working.
+____________________________________________________________
+____________________________________________________________
+Ok. I've added this task:
+   [D][ ] return book (by: Jun 06 2019)
+You have 2 task(s) now. Better start working.
+____________________________________________________________
+____________________________________________________________
+Ok. I've added this task:
+   [T][ ] buy groceries
+You have 3 task(s) now. Better start working.
+____________________________________________________________
+____________________________________________________________
+Here are the matching tasks in your list:
+1. [T][ ] read book
+2. [D][ ] return book (by: Jun 06 2019)
+____________________________________________________________
+____________________________________________________________
+Bye. I'm going to sleep.
+____________________________________________________________
+```
+
+## Test case 40: Reject invalid find arguments
+
+**Aim:** Verify that `find` requires exactly one keyword and that invalid commands do not change the task list.
+
+**Command:** `java "-Dfile.encoding=UTF-8" "-Dstdout.encoding=UTF-8" -cp out cookie.Cookie`
+
+**Inputs:**
+```text
+find
+find book now
+list
+bye
+```
+
+**Expected output:**
+```text
+____________________________________________________________
+ ██████╗ ██████╗  ██████╗ ██╗  ██╗██╗███████╗
+██╔════╝██╔═══██╗██╔═══██╗██║ ██╔╝██║██╔════╝
+██║     ██║   ██║██║   ██║█████╔╝ ██║█████╗  
+██║     ██║   ██║██║   ██║██╔═██╗ ██║██╔══╝  
+╚██████╗╚██████╔╝╚██████╔╝██║  ██╗██║███████╗
+ ╚═════╝ ╚═════╝  ╚═════╝ ╚═╝  ╚═╝╚═╝╚══════╝
+Hello! I'm your favourite chatbot Cookie.
+What do you need today?
+____________________________________________________________
+____________________________________________________________
+Bruh... Usage: find <keyword>.
+____________________________________________________________
+____________________________________________________________
+Bruh... Usage: find <keyword>.
+____________________________________________________________
+____________________________________________________________
+Here are the task(s) in your list:
 ____________________________________________________________
 ____________________________________________________________
 Bye. I'm going to sleep.

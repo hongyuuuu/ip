@@ -129,6 +129,19 @@ public class Ui {
         System.out.println(SEPARATOR);
     }
 
+    /** Displays tasks whose descriptions contain the specified keyword. */
+    public void showMatchingTasks(String keyword, TaskList tasks) {
+        System.out.println(SEPARATOR);
+        System.out.println("Here are the matching tasks in your list:");
+        for (int i = 0; i < tasks.size(); i++) {
+            Task task = tasks.get(i);
+            if (task.getDescription().contains(keyword)) {
+                System.out.println(i + 1 + ". " + task);
+            }
+        }
+        System.out.println(SEPARATOR);
+    }
+
     /** Returns whether an event has a date range that includes the requested date. */
     private boolean occursOnDate(Event event, LocalDate date) {
         LocalDate startDate = event.getStart().getDate();
