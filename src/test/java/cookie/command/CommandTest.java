@@ -1,9 +1,9 @@
 package cookie.command;
 
-import org.junit.jupiter.api.Test;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+
+import org.junit.jupiter.api.Test;
 
 /** Tests conversion between command words and {@link Command} values. */
 public class CommandTest {
