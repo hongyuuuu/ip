@@ -1,22 +1,22 @@
 package cookie.ui;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import cookie.command.CookieException;
 import cookie.task.DateTimeValue;
 import cookie.task.Deadline;
 import cookie.task.Event;
 import cookie.task.TaskList;
 import cookie.task.Todo;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.LocalTime;
 
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /** Tests the UI's messages and date-based task filtering. */
 public class UiTest {

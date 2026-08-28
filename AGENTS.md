@@ -31,6 +31,10 @@ Unless the user says otherwise, assume that you are assisting a student working 
 Follow the [SE-EDUCATION intermediate Java coding standard](https://se-education.org/guides/conventions/java/intermediate.html)
 for Java naming, layout, statements, imports, comments, and related conventions. Use the Google Java Style Guide for topics not covered by the standard.
 
+The project-specific `$seedu-java-coding-standard` skill in
+`.codex/skills/seedu-java-coding-standard` is the working checklist for these
+rules. Apply it to all Java source and test code in this repository.
+
 ## Java version:
 
 Ensure that Java 25 is used when running the application or build tasks. On macOS, use `sdk use java 25.0.3.fx-zulu` to switch to Java 25 if needed.
@@ -40,6 +44,11 @@ Ensure that Java 25 is used when running the application or build tasks. On macO
 Use lightweight tags unless the user requests an annotated tag.
 When proposing or creating a commit message, include enough detail to explain the rationale for the change.
 Do not commit or push unless explicitly asked.
+
+Follow the [SE-Education Git conventions](https://se-education.org/guides/conventions/git.html)
+for all future branch names and commits. Use the project-specific
+`$seedu-git-standard` skill in `.codex/skills/seedu-git-standard` when naming a
+branch or drafting a commit message.
 
 ## Console UI testing
 

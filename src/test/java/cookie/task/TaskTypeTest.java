@@ -1,10 +1,10 @@
 package cookie.task;
 
-import cookie.command.CookieException;
-import org.junit.jupiter.api.Test;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+
+import cookie.command.CookieException;
+import org.junit.jupiter.api.Test;
 
 /** Tests conversion between saved task type codes and enum values. */
 public class TaskTypeTest {

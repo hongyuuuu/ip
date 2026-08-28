@@ -30,7 +30,7 @@ public enum Command {
     public static Command fromString(String action) throws CookieException {
         try {
             return Command.valueOf(action.toUpperCase());
-        } catch (IllegalArgumentException e) {
+        } catch (IllegalArgumentException exception) {
             throw new CookieException("What is that command!?");
         }
     }
