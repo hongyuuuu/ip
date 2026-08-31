@@ -1,5 +1,9 @@
 package cookie;
 
+import java.io.IOException;
+import java.time.LocalDate;
+import java.util.Scanner;
+
 import cookie.command.CookieException;
 import cookie.command.Parser;
 import cookie.storage.Storage;
@@ -9,10 +13,6 @@ import cookie.task.Task;
 import cookie.task.TaskList;
 import cookie.task.Todo;
 import cookie.ui.Ui;
-
-import java.io.IOException;
-import java.time.LocalDate;
-import java.util.Scanner;
 
 /** The main entry point for the Cookie command-line application. */
 public class Cookie {
@@ -28,7 +28,8 @@ public class Cookie {
     /** Interprets commands entered by the user. */
     private final Parser parser;
 
-    /** Creates Cookie with a task file at the specified path.
+    /**
+     * Creates Cookie with a task file at the specified path.
      *
      * @param filePath The path of the task file.
      */
@@ -184,6 +185,8 @@ public class Cookie {
                     case EVENT -> {
                         addEvent(parsedCommand.description());
                     }
+                    default -> throw new AssertionError("Unhandled command: "
+                            + parsedCommand.command());
                 }
             } catch (CookieException exception) {
                 ui.showError(exception);
@@ -191,7 +194,8 @@ public class Cookie {
         }
     }
 
-    /** Starts Cookie with its default task file.
+    /**
+     * Starts Cookie with its default task file.
      *
      * @param args Command-line arguments, which are ignored.
      */

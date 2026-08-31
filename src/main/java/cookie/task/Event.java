@@ -9,7 +9,8 @@ public class Event extends Task {
     /** Stores the event's ending date or time. */
     protected DateTimeValue end;
 
-    /** Creates an event task with the specified description, start, and end values.
+    /**
+     * Creates an event task with the specified description, start, and end values.
      *
      * @param description The task description.
      * @param start The event's starting date or time.
@@ -21,7 +22,8 @@ public class Event extends Task {
         this.end = end;
     }
 
-    /** Returns the event's starting date or time.
+    /**
+     * Returns the event's starting date or time.
      *
      * @return The event's start date or time.
      */
@@ -29,7 +31,8 @@ public class Event extends Task {
         return this.start;
     }
 
-    /** Returns the event's ending date or time.
+    /**
+     * Returns the event's ending date or time.
      *
      * @return The event's end date or time.
      */
@@ -37,7 +40,8 @@ public class Event extends Task {
         return this.end;
     }
 
-    /** Returns the string for {@code Event} tasks to be logged.
+    /**
+     * Returns the string for {@code Event} tasks to be logged.
      *
      * @return The event's storage representation.
      */
@@ -47,7 +51,8 @@ public class Event extends Task {
                 + " | " + this.start.toStorageString() + " to " + this.end.toStorageString();
     }
 
-    /** Returns the event's type marker, checkbox, description, and time range.
+    /**
+     * Returns the event's type marker, checkbox, description, and time range.
      *
      * @return The event's display representation.
      */

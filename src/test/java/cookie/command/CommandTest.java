@@ -17,8 +17,7 @@ public class CommandTest {
 
     @Test
     public void fromString_unknownCommand_throwsCookieException() {
-        CookieException exception = assertThrows(CookieException.class,
-                () -> Command.fromString("remember"));
+        CookieException exception = assertThrows(CookieException.class, () -> Command.fromString("remember"));
         assertEquals("What is that command!?", exception.getMessage());
     }
 }

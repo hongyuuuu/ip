@@ -23,7 +23,8 @@ public enum Command {
     /** Creates an event task. */
     EVENT;
 
-    /** Converts a string action into a {@code Command} enum.
+    /**
+     * Converts a string action into a {@code Command} enum.
      *
      * @param action The command word to convert.
      * @return The matching command.

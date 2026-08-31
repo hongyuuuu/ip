@@ -54,9 +54,7 @@ public class DateTimeValueTest {
 
     @Test
     public void parseStorageValue_invalidValue_throwsDateTimeParseException() {
-        assertThrows(DateTimeParseException.class,
-                () -> DateTimeValue.parseStorageValue("2026-02-30"));
-        assertThrows(DateTimeParseException.class,
-                () -> DateTimeValue.parseStorageValue("not-a-date"));
+        assertThrows(DateTimeParseException.class, () -> DateTimeValue.parseStorageValue("2026-02-30"));
+        assertThrows(DateTimeParseException.class, () -> DateTimeValue.parseStorageValue("not-a-date"));
     }
 }

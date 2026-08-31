@@ -1,14 +1,5 @@
 package cookie.storage;
 
-import cookie.command.CookieException;
-import cookie.task.DateTimeValue;
-import cookie.task.Deadline;
-import cookie.task.Event;
-import cookie.task.Task;
-import cookie.task.TaskList;
-import cookie.task.TaskType;
-import cookie.task.Todo;
-
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -20,12 +11,22 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.time.format.DateTimeParseException;
 
+import cookie.command.CookieException;
+import cookie.task.DateTimeValue;
+import cookie.task.Deadline;
+import cookie.task.Event;
+import cookie.task.Task;
+import cookie.task.TaskList;
+import cookie.task.TaskType;
+import cookie.task.Todo;
+
 /** Handles loading tasks from and saving tasks to Cookie's data file. */
 public class Storage {
     /** The file used to persist Cookie's tasks. */
     private final Path filePath;
 
-    /** Creates storage backed by the specified file path.
+    /**
+     * Creates storage backed by the specified file path.
      *
      * @param filePath The path of the task file.
      */
@@ -33,7 +34,8 @@ public class Storage {
         this.filePath = Paths.get(filePath);
     }
 
-    /** Loads valid task records from the data file, or an empty list if it does not exist.
+    /**
+     * Loads valid task records from the data file, or an empty list if it does not exist.
      *
      * @return The loaded tasks.
      * @throws IOException If the data file cannot be read.
@@ -61,7 +63,8 @@ public class Storage {
         return tasks;
     }
 
-    /** Saves all tasks to the data file using a temporary file and an atomic replacement when supported.
+    /**
+     * Saves all tasks to the data file using a temporary file and an atomic replacement when supported.
      *
      * @param tasks The tasks to save.
      * @throws IOException If the data file cannot be written.
@@ -110,38 +113,38 @@ public class Storage {
 
         Task task;
         switch (TaskType.fromCode(fields[0])) {
-        case TODO -> {
-            if (fields.length != 3 || fields[2].isBlank()) {
-                throw new CookieException("A saved todo record is malformed.");
+            case TODO -> {
+                if (fields.length != 3 || fields[2].isBlank()) {
+                    throw new CookieException("A saved todo record is malformed.");
+                }
+                task = new Todo(fields[2]);
             }
-            task = new Todo(fields[2]);
-        }
-        case DEADLINE -> {
-            if (fields.length != 4 || fields[2].isBlank() || fields[3].isBlank()) {
-                throw new CookieException("A saved deadline record is malformed.");
+            case DEADLINE -> {
+                if (fields.length != 4 || fields[2].isBlank() || fields[3].isBlank()) {
+                    throw new CookieException("A saved deadline record is malformed.");
+                }
+                try {
+                    task = new Deadline(fields[2], DateTimeValue.parseStorageValue(fields[3]));
+                } catch (DateTimeParseException exception) {
+                    throw new CookieException("A saved deadline record is malformed.");
+                }
             }
-            try {
-                task = new Deadline(fields[2], DateTimeValue.parseStorageValue(fields[3]));
-            } catch (DateTimeParseException exception) {
-                throw new CookieException("A saved deadline record is malformed.");
+            case EVENT -> {
+                if (fields.length != 4 || fields[2].isBlank()) {
+                    throw new CookieException("A saved event record is malformed.");
+                }
+                String[] times = fields[3].split("\\s+to\\s+", 2);
+                if (times.length != 2 || times[0].isBlank() || times[1].isBlank()) {
+                    throw new CookieException("A saved event record is malformed.");
+                }
+                try {
+                    task = new Event(fields[2], DateTimeValue.parseStorageValue(times[0]),
+                            DateTimeValue.parseStorageValue(times[1]));
+                } catch (DateTimeParseException exception) {
+                    throw new CookieException("A saved event record is malformed.");
+                }
             }
-        }
-        case EVENT -> {
-            if (fields.length != 4 || fields[2].isBlank()) {
-                throw new CookieException("A saved event record is malformed.");
-            }
-            String[] times = fields[3].split("\\s+to\\s+", 2);
-            if (times.length != 2 || times[0].isBlank() || times[1].isBlank()) {
-                throw new CookieException("A saved event record is malformed.");
-            }
-            try {
-                task = new Event(fields[2], DateTimeValue.parseStorageValue(times[0]),
-                        DateTimeValue.parseStorageValue(times[1]));
-            } catch (DateTimeParseException exception) {
-                throw new CookieException("A saved event record is malformed.");
-            }
-        }
-        default -> throw new CookieException("A saved task record is malformed.");
+            default -> throw new CookieException("A saved task record is malformed.");
         }
 
         if ("Done".equalsIgnoreCase(fields[1])) {

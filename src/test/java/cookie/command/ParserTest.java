@@ -4,11 +4,12 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import cookie.task.DateTimeValue;
 import java.time.LocalDate;
 import java.time.LocalTime;
 
 import org.junit.jupiter.api.Test;
+
+import cookie.task.DateTimeValue;
 
 /** Tests command parsing, validation, and date/time conversion. */
 public class ParserTest {
@@ -29,8 +30,7 @@ public class ParserTest {
 
     @Test
     public void parse_blankInput_throwsCookieException() {
-        CookieException exception = assertThrows(CookieException.class,
-                () -> parser.parse(" \t  "));
+        CookieException exception = assertThrows(CookieException.class, () -> parser.parse(" \t  "));
         assertEquals("I couldn't understand an empty command.", exception.getMessage());
     }
 
@@ -85,8 +85,7 @@ public class ParserTest {
     @Test
     public void parseDateTime_invalidValues_throwsCookieException() {
         for (String invalidValue : new String[] {"2026-02-30", "2460", "2026/08/27 0915"}) {
-            CookieException exception = assertThrows(CookieException.class,
-                    () -> parser.parseDateTime(invalidValue));
+            CookieException exception = assertThrows(CookieException.class, () -> parser.parseDateTime(invalidValue));
             assertEquals("A date, time, or date and time must use yyyy-MM-dd, d/M/yyyy, HHmm, "
                     + "yyyy-MM-dd HHmm, or d/M/yyyy HHmm.", exception.getMessage());
         }
@@ -100,8 +99,7 @@ public class ParserTest {
 
     @Test
     public void parseDate_invalidValue_throwsCookieException() {
-        CookieException exception = assertThrows(CookieException.class,
-                () -> parser.parseDate("2026-02-30"));
+        CookieException exception = assertThrows(CookieException.class, () -> parser.parseDate("2026-02-30"));
         assertEquals("A date must use yyyy-MM-dd or d/M/yyyy.", exception.getMessage());
     }
 
@@ -118,17 +116,21 @@ public class ParserTest {
     @Test
     public void parseDeadline_missingOrInvalidFields_throwsCookieException() {
         String structureError = "A deadline needs a description and a date and time after /by.";
-        assertEquals(structureError, assertThrows(CookieException.class,
-                () -> parser.parseDeadline("submit report")).getMessage());
-        assertEquals(structureError, assertThrows(CookieException.class,
-                () -> parser.parseDeadline(" /by 2026-08-27")).getMessage());
+        assertEquals(structureError,
+                assertThrows(CookieException.class, () ->
+                        parser.parseDeadline("submit report")).getMessage());
+        assertEquals(structureError,
+                assertThrows(CookieException.class, () ->
+                        parser.parseDeadline(" /by 2026-08-27")).getMessage());
 
         String valueError = "A deadline date, time, or date and time must use yyyy-MM-dd, d/M/yyyy, "
                 + "HHmm, yyyy-MM-dd HHmm, or d/M/yyyy HHmm.";
-        assertEquals(valueError, assertThrows(CookieException.class,
-                () -> parser.parseDeadline("submit report /by 2026-02-30")).getMessage());
-        assertEquals("Task details cannot contain '|'.", assertThrows(CookieException.class,
-                () -> parser.parseDeadline("unsafe|task /by 2026-08-27")).getMessage());
+        assertEquals(valueError,
+                assertThrows(CookieException.class, () ->
+                        parser.parseDeadline("submit report /by 2026-02-30")).getMessage());
+        assertEquals("Task details cannot contain '|'.",
+                assertThrows(CookieException.class, () ->
+                        parser.parseDeadline("unsafe|task /by 2026-08-27")).getMessage());
     }
 
     @Test
@@ -146,19 +148,22 @@ public class ParserTest {
         String structureError = "An event needs a description, a start time after /from, "
                 + "and an end time after /to.";
         for (String invalid : new String[] {
-                "project meeting", " /from 0900 /to 1000", "project meeting /from /to 1000",
-                "project meeting /from 0900 /to "
+            "project meeting", " /from 0900 /to 1000", "project meeting /from /to 1000",
+            "project meeting /from 0900 /to "
         }) {
-            assertEquals(structureError, assertThrows(CookieException.class,
-                    () -> parser.parseEvent(invalid)).getMessage());
+            assertEquals(structureError,
+                    assertThrows(CookieException.class, () ->
+                            parser.parseEvent(invalid)).getMessage());
         }
 
         String valueError = "An event's start and end values must use yyyy-MM-dd, d/M/yyyy, HHmm, "
                 + "yyyy-MM-dd HHmm, or d/M/yyyy HHmm.";
-        assertEquals(valueError, assertThrows(CookieException.class,
-                () -> parser.parseEvent("project meeting /from 2460 /to 1000")).getMessage());
-        assertEquals("Task details cannot contain '|'.", assertThrows(CookieException.class,
-                () -> parser.parseEvent("unsafe|event /from 0900 /to 1000")).getMessage());
+        assertEquals(valueError,
+                assertThrows(CookieException.class, () ->
+                        parser.parseEvent("project meeting /from 2460 /to 1000")).getMessage());
+        assertEquals("Task details cannot contain '|'.",
+                assertThrows(CookieException.class, () ->
+                        parser.parseEvent("unsafe|event /from 0900 /to 1000")).getMessage());
     }
 
     @Test
@@ -166,8 +171,9 @@ public class ParserTest {
         assertEquals(0, parser.parseTaskIndex(parser.parse("mark 1"), 3));
         assertEquals(2, parser.parseTaskIndex(parser.parse("mark 3"), 3));
 
-        assertEquals("Usage: mark <task number>.", assertThrows(CookieException.class,
-                () -> parser.parseTaskIndex(parser.parse("mark"), 3)).getMessage());
+        assertEquals("Usage: mark <task number>.",
+                assertThrows(CookieException.class, () ->
+                        parser.parseTaskIndex(parser.parse("mark"), 3)).getMessage());
         assertEquals("The task number must be a positive whole number.", assertThrows(
                 CookieException.class, () -> parser.parseTaskIndex(parser.parse("mark abc"), 3))
                 .getMessage());
@@ -176,7 +182,8 @@ public class ParserTest {
                     assertThrows(CookieException.class, () -> parser.parseTaskIndex(
                             parser.parse("mark " + invalidNumber), 3)).getMessage());
         }
-        assertEquals("Usage: mark <task number>.", assertThrows(CookieException.class,
-                () -> parser.parseTaskIndex(parser.parse("mark 1 extra"), 3)).getMessage());
+        assertEquals("Usage: mark <task number>.",
+                assertThrows(CookieException.class, () ->
+                        parser.parseTaskIndex(parser.parse("mark 1 extra"), 3)).getMessage());
     }
 }

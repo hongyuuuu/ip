@@ -19,7 +19,8 @@ public enum TaskType {
         this.code = code;
     }
 
-    /** Returns the single-letter storage code for this task type.
+    /**
+     * Returns the single-letter storage code for this task type.
      *
      * @return The storage code.
      */
@@ -27,7 +28,8 @@ public enum TaskType {
         return this.code;
     }
 
-    /** Converts a storage code into its corresponding task type.
+    /**
+     * Converts a storage code into its corresponding task type.
      *
      * @param code The storage code to convert.
      * @return The matching task type.
