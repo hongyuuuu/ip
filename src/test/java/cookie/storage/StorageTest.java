@@ -4,12 +4,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import cookie.task.DateTimeValue;
-import cookie.task.Deadline;
-import cookie.task.Event;
-import cookie.task.Task;
-import cookie.task.TaskList;
-import cookie.task.Todo;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -21,6 +15,12 @@ import java.util.List;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import cookie.task.DateTimeValue;
+import cookie.task.Deadline;
+import cookie.task.Event;
+import cookie.task.TaskList;
+import cookie.task.Todo;
 
 /** Tests persistence, including round trips and malformed-record handling. */
 public class StorageTest {

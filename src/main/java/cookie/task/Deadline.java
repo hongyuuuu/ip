@@ -6,7 +6,8 @@ public class Deadline extends Task {
     /** Stores the date or time by which the task should be completed. */
     protected DateTimeValue by;
 
-    /** Creates a deadline task with the specified description and deadline.
+    /**
+     * Creates a deadline task with the specified description and deadline.
      *
      * @param description The task description.
      * @param by The date or time by which the task should be completed.
@@ -16,7 +17,8 @@ public class Deadline extends Task {
         this.by = by;
     }
 
-    /** Returns the deadline's date or time.
+    /**
+     * Returns the deadline's date or time.
      *
      * @return The deadline date or time.
      */
@@ -24,7 +26,8 @@ public class Deadline extends Task {
         return this.by;
     }
 
-    /** Returns the string for {@code Deadline} tasks to be logged.
+    /**
+     * Returns the string for {@code Deadline} tasks to be logged.
      *
      * @return The deadline's storage representation.
      */
@@ -34,7 +37,8 @@ public class Deadline extends Task {
                 + " | " + this.by.toStorageString();
     }
 
-    /** Returns the deadline's type marker, checkbox, description, and deadline.
+    /**
+     * Returns the deadline's type marker, checkbox, description, and deadline.
      *
      * @return The deadline's display representation.
      */

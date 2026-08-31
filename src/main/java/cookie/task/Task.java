@@ -8,7 +8,8 @@ public abstract class Task {
     /** Whether or not the task has been completed. */
     protected boolean isDone;
 
-    /** Creates an incomplete task with the specified description.
+    /**
+     * Creates an incomplete task with the specified description.
      *
      * @param description The task description.
      */
@@ -17,7 +18,8 @@ public abstract class Task {
         this.isDone = false;
     }
 
-    /** Returns the task status as a checkbox.
+    /**
+     * Returns the task status as a checkbox.
      *
      * @return The completed or incomplete checkbox.
      */
@@ -25,7 +27,8 @@ public abstract class Task {
         return (isDone ? "[X]" : "[ ]");
     }
 
-    /** Returns the task description.
+    /**
+     * Returns the task description.
      *
      * @return The task description.
      */
@@ -33,7 +36,8 @@ public abstract class Task {
         return this.description;
     }
 
-    /** Returns whether the task has been completed.
+    /**
+     * Returns whether the task has been completed.
      *
      * @return {@code true} if the task is done, otherwise {@code false}.
      */
@@ -51,7 +55,8 @@ public abstract class Task {
         this.isDone = false;
     }
 
-    /** Returns the formatted string representation for file storage.
+    /**
+     * Returns the formatted string representation for file storage.
      *
      * @return The task's storage representation.
      */

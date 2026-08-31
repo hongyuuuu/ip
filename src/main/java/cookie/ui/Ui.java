@@ -1,14 +1,14 @@
 package cookie.ui;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.Locale;
+
 import cookie.command.CookieException;
 import cookie.task.Deadline;
 import cookie.task.Event;
 import cookie.task.Task;
 import cookie.task.TaskList;
-
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import java.util.Locale;
 
 /** Handles Cookie's messages and other interactions with the user. */
 public class Ui {
@@ -47,7 +47,8 @@ public class Ui {
         System.out.println(SEPARATOR);
     }
 
-    /** Displays confirmation that a task was added.
+    /**
+     * Displays confirmation that a task was added.
      *
      * @param task The added task.
      * @param taskCount The number of tasks after the addition.
@@ -60,7 +61,8 @@ public class Ui {
         System.out.println(SEPARATOR);
     }
 
-    /** Displays all tasks with their one-based positions.
+    /**
+     * Displays all tasks with their one-based positions.
      *
      * @param tasks The tasks to display.
      */
@@ -74,7 +76,8 @@ public class Ui {
         System.out.println(SEPARATOR);
     }
 
-    /** Displays confirmation that a task was marked as done.
+    /**
+     * Displays confirmation that a task was marked as done.
      *
      * @param task The marked task.
      */
@@ -85,7 +88,8 @@ public class Ui {
         System.out.println(SEPARATOR);
     }
 
-    /** Displays confirmation that a task was unmarked as done.
+    /**
+     * Displays confirmation that a task was unmarked as done.
      *
      * @param task The unmarked task.
      */
@@ -96,7 +100,8 @@ public class Ui {
         System.out.println(SEPARATOR);
     }
 
-    /** Displays confirmation that a task was deleted.
+    /**
+     * Displays confirmation that a task was deleted.
      *
      * @param task The deleted task.
      * @param remainingTaskCount The number of tasks after deletion.
@@ -109,7 +114,8 @@ public class Ui {
         System.out.println(SEPARATOR);
     }
 
-    /** Displays a friendly error without terminating the application.
+    /**
+     * Displays a friendly error without terminating the application.
      *
      * @param exception The error to display.
      */
@@ -119,7 +125,8 @@ public class Ui {
         System.out.println(SEPARATOR);
     }
 
-    /** Displays an error encountered while saving tasks.
+    /**
+     * Displays an error encountered while saving tasks.
      *
      * @param details The details of the saving error.
      */
@@ -129,7 +136,8 @@ public class Ui {
         System.out.println(SEPARATOR);
     }
 
-    /** Displays an error encountered while loading tasks.
+    /**
+     * Displays an error encountered while loading tasks.
      *
      * @param details The details of the loading error.
      */
@@ -139,7 +147,8 @@ public class Ui {
         System.out.println(SEPARATOR);
     }
 
-    /** Displays deadlines and events that occur on the requested calendar date.
+    /**
+     * Displays deadlines and events that occur on the requested calendar date.
      *
      * @param date The date to search.
      * @param tasks The tasks to search.

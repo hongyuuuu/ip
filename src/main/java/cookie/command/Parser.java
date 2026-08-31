@@ -1,7 +1,5 @@
 package cookie.command;
 
-import cookie.task.DateTimeValue;
-
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -9,6 +7,8 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.time.format.ResolverStyle;
 import java.util.Locale;
+
+import cookie.task.DateTimeValue;
 
 /** Interprets the command structure of user input for Cookie. */
 public class Parser {
@@ -41,7 +41,8 @@ public class Parser {
     public Parser() {
     }
 
-    /** Parses raw user input into a command and its arguments.
+    /**
+     * Parses raw user input into a command and its arguments.
      *
      * @param input The raw user input to parse.
      * @return The parsed command and its arguments.
@@ -59,7 +60,8 @@ public class Parser {
         return new ParsedCommand(Command.fromString(action), action, parts, description);
     }
 
-    /** Ensures that a command has no arguments after its command word.
+    /**
+     * Ensures that a command has no arguments after its command word.
      *
      * @param command The parsed command to validate.
      * @throws CookieException If the command has one or more arguments.
@@ -71,7 +73,8 @@ public class Parser {
         }
     }
 
-    /** Ensures that a command has exactly one argument and reports its usage otherwise.
+    /**
+     * Ensures that a command has exactly one argument and reports its usage otherwise.
      *
      * @param command The parsed command to validate.
      * @param usage The usage message to display when validation fails.
@@ -83,7 +86,8 @@ public class Parser {
         }
     }
 
-    /** Returns a task description, rejecting commands with no description.
+    /**
+     * Returns a task description, rejecting commands with no description.
      *
      * @param command The parsed command whose description is required.
      * @return The non-blank task description.
@@ -97,7 +101,8 @@ public class Parser {
         return command.description();
     }
 
-    /** Rejects a value that would make the task file format ambiguous.
+    /**
+     * Rejects a value that would make the task file format ambiguous.
      *
      * @param value The task value to validate.
      * @return The validated value.
@@ -110,7 +115,8 @@ public class Parser {
         return value;
     }
 
-    /** Parses a user-provided date, time, or date-time using supported formats.
+    /**
+     * Parses a user-provided date, time, or date-time using supported formats.
      *
      * @param value The date, time, or date-time text to parse.
      * @return The parsed date, time, or date-time value.
@@ -147,7 +153,8 @@ public class Parser {
         }
     }
 
-    /** Parses a user-provided date using one of the supported date formats.
+    /**
+     * Parses a user-provided date using one of the supported date formats.
      *
      * @param value The date text to parse.
      * @return The parsed date.
@@ -170,7 +177,8 @@ public class Parser {
         throw new CookieException("A date must use yyyy-MM-dd or d/M/yyyy.");
     }
 
-    /** Parses the description and date or time supplied for a deadline.
+    /**
+     * Parses the description and date or time supplied for a deadline.
      *
      * @param description The raw description and deadline value to parse.
      * @return The parsed deadline.
@@ -196,7 +204,8 @@ public class Parser {
         return new ParsedDeadline(taskDescription, deadlineDateTime);
     }
 
-    /** Parses the description and time values supplied for an event.
+    /**
+     * Parses the description and time values supplied for an event.
      *
      * @param description The raw description and event values to parse.
      * @return The parsed event.
@@ -233,7 +242,8 @@ public class Parser {
         return new ParsedEvent(eventDescription, start, end);
     }
 
-    /** Converts a one-based task number into a zero-based list index.
+    /**
+     * Converts a one-based task number into a zero-based list index.
      *
      * @param command The parsed command containing the task number.
      * @param taskCount The number of tasks currently in the list.
@@ -279,7 +289,8 @@ public class Parser {
             this.description = description;
         }
 
-        /** Returns the resolved command.
+        /**
+         * Returns the resolved command.
          *
          * @return The resolved command.
          */
@@ -287,7 +298,8 @@ public class Parser {
             return command;
         }
 
-        /** Returns the action word as entered by the user.
+        /**
+         * Returns the action word as entered by the user.
          *
          * @return The original action word.
          */
@@ -295,7 +307,8 @@ public class Parser {
             return action;
         }
 
-        /** Returns the number of whitespace-separated arguments.
+        /**
+         * Returns the number of whitespace-separated arguments.
          *
          * @return The number of arguments.
          */
@@ -303,7 +316,8 @@ public class Parser {
             return parts.length - 1;
         }
 
-        /** Returns the argument at the specified zero-based argument position.
+        /**
+         * Returns the argument at the specified zero-based argument position.
          *
          * @param index The zero-based argument position.
          * @return The argument at the specified position.
@@ -312,7 +326,8 @@ public class Parser {
             return parts[index + 1];
         }
 
-        /** Returns the text following the action word.
+        /**
+         * Returns the text following the action word.
          *
          * @return The command description.
          */
@@ -334,7 +349,8 @@ public class Parser {
             this.dateTime = dateTime;
         }
 
-        /** Returns the validated task description.
+        /**
+         * Returns the validated task description.
          *
          * @return The task description.
          */
@@ -342,7 +358,8 @@ public class Parser {
             return description;
         }
 
-        /** Returns the parsed deadline date or time.
+        /**
+         * Returns the parsed deadline date or time.
          *
          * @return The deadline date or time.
          */
@@ -368,7 +385,8 @@ public class Parser {
             this.end = end;
         }
 
-        /** Returns the validated task description.
+        /**
+         * Returns the validated task description.
          *
          * @return The task description.
          */
@@ -376,7 +394,8 @@ public class Parser {
             return description;
         }
 
-        /** Returns the parsed event start date or time.
+        /**
+         * Returns the parsed event start date or time.
          *
          * @return The event start date or time.
          */
@@ -384,7 +403,8 @@ public class Parser {
             return start;
         }
 
-        /** Returns the parsed event end date or time.
+        /**
+         * Returns the parsed event end date or time.
          *
          * @return The event end date or time.
          */

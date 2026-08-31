@@ -14,7 +14,8 @@ public class TaskList implements Iterable<Task> {
         this.tasks = new ArrayList<>(100);
     }
 
-    /** Creates a task list containing a copy of the supplied tasks.
+    /**
+     * Creates a task list containing a copy of the supplied tasks.
      *
      * @param tasks The tasks to copy into this list.
      */
@@ -22,7 +23,8 @@ public class TaskList implements Iterable<Task> {
         this.tasks = new ArrayList<>(tasks);
     }
 
-    /** Adds a task to the end of this list.
+    /**
+     * Adds a task to the end of this list.
      *
      * @param task The task to add.
      */
@@ -30,7 +32,8 @@ public class TaskList implements Iterable<Task> {
         tasks.add(task);
     }
 
-    /** Inserts a task at the specified position.
+    /**
+     * Inserts a task at the specified position.
      *
      * @param index The zero-based insertion position.
      * @param task The task to insert.
@@ -39,7 +42,8 @@ public class TaskList implements Iterable<Task> {
         tasks.add(index, task);
     }
 
-    /** Marks the task at the specified position as done.
+    /**
+     * Marks the task at the specified position as done.
      *
      * @param index The zero-based task position.
      */
@@ -47,7 +51,8 @@ public class TaskList implements Iterable<Task> {
         tasks.get(index).mark();
     }
 
-    /** Marks the task at the specified position as not done.
+    /**
+     * Marks the task at the specified position as not done.
      *
      * @param index The zero-based task position.
      */
@@ -55,7 +60,8 @@ public class TaskList implements Iterable<Task> {
         tasks.get(index).unmark();
     }
 
-    /** Returns the task at the specified position.
+    /**
+     * Returns the task at the specified position.
      *
      * @param index The zero-based task position.
      * @return The task at the specified position.
@@ -64,7 +70,8 @@ public class TaskList implements Iterable<Task> {
         return tasks.get(index);
     }
 
-    /** Deletes and returns the task at the specified position.
+    /**
+     * Deletes and returns the task at the specified position.
      *
      * @param index The zero-based task position.
      * @return The deleted task.
@@ -73,7 +80,8 @@ public class TaskList implements Iterable<Task> {
         return tasks.remove(index);
     }
 
-    /** Returns the number of tasks in this list.
+    /**
+     * Returns the number of tasks in this list.
      *
      * @return The number of tasks.
      */
@@ -81,7 +89,8 @@ public class TaskList implements Iterable<Task> {
         return tasks.size();
     }
 
-    /** Returns an iterator over tasks in their stored order.
+    /**
+     * Returns an iterator over tasks in their stored order.
      *
      * @return An iterator over the tasks.
      */

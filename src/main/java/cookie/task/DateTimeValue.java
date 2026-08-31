@@ -24,7 +24,8 @@ public class DateTimeValue {
     /** Stores the time component, if one was supplied. */
     private final LocalTime time;
 
-    /** Creates a value with at least one date or time component.
+    /**
+     * Creates a value with at least one date or time component.
      *
      * @param date The date component, or {@code null} for a time-only value.
      * @param time The time component, or {@code null} for a date-only value.
@@ -37,7 +38,8 @@ public class DateTimeValue {
         this.time = time;
     }
 
-    /** Returns the date component, or {@code null} when this is time-only.
+    /**
+     * Returns the date component, or {@code null} when this is time-only.
      *
      * @return The date component, or {@code null}.
      */
@@ -45,7 +47,8 @@ public class DateTimeValue {
         return this.date;
     }
 
-    /** Returns the time component, or {@code null} when this is date-only.
+    /**
+     * Returns the time component, or {@code null} when this is date-only.
      *
      * @return The time component, or {@code null}.
      */
@@ -53,7 +56,8 @@ public class DateTimeValue {
         return this.time;
     }
 
-    /** Returns the canonical representation used in the saved task file.
+    /**
+     * Returns the canonical representation used in the saved task file.
      *
      * @return The storage representation of this value.
      */
@@ -64,7 +68,8 @@ public class DateTimeValue {
         return date != null ? date.toString() : time.toString();
     }
 
-    /** Returns the readable representation shown in the console.
+    /**
+     * Returns the readable representation shown in the console.
      *
      * @return The display representation of this value.
      */
@@ -77,7 +82,8 @@ public class DateTimeValue {
                 : time.format(TIME_DISPLAY_FORMAT);
     }
 
-    /** Parses a canonical value loaded from the saved task file.
+    /**
+     * Parses a canonical value loaded from the saved task file.
      *
      * @param value The canonical date, time, or date-time text to parse.
      * @return The parsed date, time, or date-time value.
