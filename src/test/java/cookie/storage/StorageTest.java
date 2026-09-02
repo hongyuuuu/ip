@@ -57,10 +57,10 @@ public class StorageTest {
                 LocalTime.of(17, 5));
         DateTimeValue eventStart = new DateTimeValue(null, LocalTime.of(9, 0));
         DateTimeValue eventEnd = new DateTimeValue(null, LocalTime.of(10, 30));
-        TaskList original = new TaskList(List.of(
+        TaskList original = new TaskList(
                 new Todo("buy milk"),
                 new Deadline("submit report", deadlineTime),
-                new Event("team meeting", eventStart, eventEnd)));
+                new Event("team meeting", eventStart, eventEnd));
         original.mark(1);
 
         storage.save(original);

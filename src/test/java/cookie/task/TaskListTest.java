@@ -31,7 +31,7 @@ public class TaskListTest {
 
     @Test
     public void taskList_markAndUnmark_delegatesToSelectedTask() {
-        TaskList tasks = new TaskList(List.of(new Todo("first"), new Todo("second")));
+        TaskList tasks = new TaskList(new Todo("first"), new Todo("second"));
 
         tasks.mark(1);
         assertTrue(tasks.get(1).isDone());
@@ -42,7 +42,7 @@ public class TaskListTest {
 
     @Test
     public void iterator_returnsTasksInStoredOrder() {
-        TaskList tasks = new TaskList(List.of(new Todo("first"), new Todo("second")));
+        TaskList tasks = new TaskList(new Todo("first"), new Todo("second"));
 
         assertEquals(List.of("first", "second"), toList(tasks).stream()
                 .map(Task::getDescription)
