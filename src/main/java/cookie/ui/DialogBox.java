@@ -1,9 +1,12 @@
 package cookie.ui;
 
+import java.io.IOException;
 import java.util.Collections;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.Label;
@@ -13,8 +16,11 @@ import javafx.scene.layout.HBox;
 
 /** Represents one message and its speaker's avatar in the chat dialog. */
 public class DialogBox extends HBox {
-    private final Label text;
-    private final ImageView displayPicture;
+    @FXML
+    private Label dialog;
+
+    @FXML
+    private ImageView displayPicture;
 
     /**
      * Creates a right-aligned dialog box.
@@ -23,15 +29,18 @@ public class DialogBox extends HBox {
      * @param image The speaker's avatar.
      */
     private DialogBox(String message, Image image) {
-        text = new Label(message);
-        displayPicture = new ImageView(image);
+        try {
+            FXMLLoader fxmlLoader = new FXMLLoader(
+                    MainWindow.class.getResource("/view/DialogBox.fxml"));
+            fxmlLoader.setController(this);
+            fxmlLoader.setRoot(this);
+            fxmlLoader.load();
+        } catch (IOException exception) {
+            throw new IllegalStateException("Unable to load a dialog box.", exception);
+        }
 
-        text.setWrapText(true);
-        displayPicture.setFitWidth(100.0);
-        displayPicture.setFitHeight(100.0);
-        setAlignment(Pos.TOP_RIGHT);
-
-        getChildren().addAll(text, displayPicture);
+        dialog.setText(message);
+        displayPicture.setImage(image);
     }
 
     /** Flips this dialog box so the avatar appears on the left. */
