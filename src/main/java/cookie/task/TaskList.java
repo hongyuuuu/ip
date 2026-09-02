@@ -9,9 +9,13 @@ public class TaskList implements Iterable<Task> {
     /** The tasks in their display and persistence order. */
     private final ArrayList<Task> tasks;
 
-    /** Creates an empty task list. */
-    public TaskList() {
-        this.tasks = new ArrayList<>(100);
+    /**
+     * Creates a task list containing the supplied tasks in argument order.
+     *
+     * @param tasks The tasks to add to this list.
+     */
+    public TaskList(Task... tasks) {
+        this(List.of(tasks));
     }
 
     /**
