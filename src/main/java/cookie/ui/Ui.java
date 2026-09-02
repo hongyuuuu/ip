@@ -19,32 +19,45 @@ public class Ui {
     private static final DateTimeFormatter DISPLAY_DATE_FORMAT =
             DateTimeFormatter.ofPattern("MMM dd yyyy", Locale.ENGLISH);
 
+    /** Whether messages should be written to the console. */
+    private final boolean isConsoleOutputEnabled;
+
+    /** The most recent message prepared for the user. */
+    private String latestMessage = "";
+
     /** Creates a UI handler for Cookie. */
     public Ui() {
+        this(true);
+    }
+
+    /**
+     * Creates a UI handler with optional console output.
+     *
+     * @param isConsoleOutputEnabled Whether messages should be written to the console.
+     */
+    public Ui(boolean isConsoleOutputEnabled) {
+        this.isConsoleOutputEnabled = isConsoleOutputEnabled;
     }
 
     /** Displays Cookie's greeting and the prompt for the first command. */
     public void greet() {
+        String lineSeparator = System.lineSeparator();
         String banner =
-                  " ██████╗ ██████╗  ██████╗ ██╗  ██╗██╗███████╗\n"
-                + "██╔════╝██╔═══██╗██╔═══██╗██║ ██╔╝██║██╔════╝\n"
-                + "██║     ██║   ██║██║   ██║█████╔╝ ██║█████╗  \n"
-                + "██║     ██║   ██║██║   ██║██╔═██╗ ██║██╔══╝  \n"
-                + "╚██████╗╚██████╔╝╚██████╔╝██║  ██╗██║███████╗\n"
+                  " ██████╗ ██████╗  ██████╗ ██╗  ██╗██╗███████╗" + lineSeparator
+                + "██╔════╝██╔═══██╗██╔═══██╗██║ ██╔╝██║██╔════╝" + lineSeparator
+                + "██║     ██║   ██║██║   ██║█████╔╝ ██║█████╗  " + lineSeparator
+                + "██║     ██║   ██║██║   ██║██╔═██╗ ██║██╔══╝  " + lineSeparator
+                + "╚██████╗╚██████╔╝╚██████╔╝██║  ██╗██║███████╗" + lineSeparator
                 + " ╚═════╝ ╚═════╝  ╚═════╝ ╚═╝  ╚═╝╚═╝╚══════╝";
 
-        System.out.println(SEPARATOR);
-        System.out.println(banner);
-        System.out.println("Hello! I'm your favourite chatbot Cookie.");
-        System.out.println("What do you need today?");
-        System.out.println(SEPARATOR);
+        show(banner + lineSeparator
+                + "Hello! I'm your favourite chatbot Cookie." + lineSeparator
+                + "What do you need today?");
     }
 
     /** Prints the message shown when the user ends the conversation. */
     public void exit() {
-        System.out.println(SEPARATOR);
-        System.out.println("Bye. I'm going to sleep.");
-        System.out.println(SEPARATOR);
+        show("Bye. I'm going to sleep.");
     }
 
     /**
@@ -54,11 +67,10 @@ public class Ui {
      * @param taskCount The number of tasks after the addition.
      */
     public void showTaskAdded(Task task, int taskCount) {
-        System.out.println(SEPARATOR);
-        System.out.println("Ok. I've added this task:");
-        System.out.println("   " + task);
-        System.out.println("You have " + taskCount + " task(s) now. Better start working.");
-        System.out.println(SEPARATOR);
+        String lineSeparator = System.lineSeparator();
+        show("Ok. I've added this task:" + lineSeparator
+                + "   " + task + lineSeparator
+                + "You have " + taskCount + " task(s) now. Better start working.");
     }
 
     /**
@@ -67,13 +79,12 @@ public class Ui {
      * @param tasks The tasks to display.
      */
     public void showTaskList(TaskList tasks) {
-        System.out.println(SEPARATOR);
-        System.out.println("Here are the task(s) in your list:");
+        StringBuilder message = new StringBuilder("Here are the task(s) in your list:");
         for (int i = 0; i < tasks.size(); i++) {
             Task task = tasks.get(i);
-            System.out.println(i + 1 + ". " + task);
+            message.append(System.lineSeparator()).append(i + 1).append(". ").append(task);
         }
-        System.out.println(SEPARATOR);
+        show(message.toString());
     }
 
     /**
@@ -82,10 +93,7 @@ public class Ui {
      * @param task The marked task.
      */
     public void showTaskMarked(Task task) {
-        System.out.println(SEPARATOR);
-        System.out.println("Wow you actually got work done...");
-        System.out.println("   " + task);
-        System.out.println(SEPARATOR);
+        show("Wow you actually got work done..." + System.lineSeparator() + "   " + task);
     }
 
     /**
@@ -94,10 +102,7 @@ public class Ui {
      * @param task The unmarked task.
      */
     public void showTaskUnmarked(Task task) {
-        System.out.println(SEPARATOR);
-        System.out.println("I can't believe you lied to me...");
-        System.out.println("   " + task);
-        System.out.println(SEPARATOR);
+        show("I can't believe you lied to me..." + System.lineSeparator() + "   " + task);
     }
 
     /**
@@ -107,11 +112,10 @@ public class Ui {
      * @param remainingTaskCount The number of tasks after deletion.
      */
     public void showTaskDeleted(Task task, int remainingTaskCount) {
-        System.out.println(SEPARATOR);
-        System.out.println("You're welcome. I've gotten rid of this task for you:");
-        System.out.println("   " + task);
-        System.out.println("Now you have " + remainingTaskCount + " task(s) in the list.");
-        System.out.println(SEPARATOR);
+        String lineSeparator = System.lineSeparator();
+        show("You're welcome. I've gotten rid of this task for you:" + lineSeparator
+                + "   " + task + lineSeparator
+                + "Now you have " + remainingTaskCount + " task(s) in the list.");
     }
 
     /**
@@ -120,9 +124,7 @@ public class Ui {
      * @param exception The error to display.
      */
     public void showError(CookieException exception) {
-        System.out.println(SEPARATOR);
-        System.out.println("Bruh... " + exception.getMessage());
-        System.out.println(SEPARATOR);
+        show("Bruh... " + exception.getMessage());
     }
 
     /**
@@ -131,9 +133,7 @@ public class Ui {
      * @param details The details of the saving error.
      */
     public void showSaveError(String details) {
-        System.out.println(SEPARATOR);
-        System.out.println("Oh no! I couldn't save your tasks: " + details);
-        System.out.println(SEPARATOR);
+        show("Oh no! I couldn't save your tasks: " + details);
     }
 
     /**
@@ -142,9 +142,7 @@ public class Ui {
      * @param details The details of the loading error.
      */
     public void showLoadError(String details) {
-        System.out.println(SEPARATOR);
-        System.out.println("Oh no! I couldn't load your tasks: " + details);
-        System.out.println(SEPARATOR);
+        show("Oh no! I couldn't load your tasks: " + details);
     }
 
     /**
@@ -154,8 +152,8 @@ public class Ui {
      * @param tasks The tasks to search.
      */
     public void showTasksOnDate(LocalDate date, TaskList tasks) {
-        System.out.println(SEPARATOR);
-        System.out.println("Here are the task(s) on " + date.format(DISPLAY_DATE_FORMAT) + ":");
+        StringBuilder message = new StringBuilder("Here are the task(s) on ")
+                .append(date.format(DISPLAY_DATE_FORMAT)).append(":");
         for (int i = 0; i < tasks.size(); i++) {
             Task task = tasks.get(i);
             boolean occursOnDate = false;
@@ -166,23 +164,36 @@ public class Ui {
             }
 
             if (occursOnDate) {
-                System.out.println(i + 1 + ". " + task);
+                message.append(System.lineSeparator()).append(i + 1).append(". ").append(task);
             }
         }
-        System.out.println(SEPARATOR);
+        show(message.toString());
     }
 
     /** Displays tasks whose descriptions contain the specified keyword. */
     public void showMatchingTasks(String keyword, TaskList tasks) {
-        System.out.println(SEPARATOR);
-        System.out.println("Here are the matching tasks in your list:");
+        StringBuilder message = new StringBuilder("Here are the matching tasks in your list:");
         for (int i = 0; i < tasks.size(); i++) {
             Task task = tasks.get(i);
             if (task.getDescription().contains(keyword)) {
-                System.out.println(i + 1 + ". " + task);
+                message.append(System.lineSeparator()).append(i + 1).append(". ").append(task);
             }
         }
-        System.out.println(SEPARATOR);
+        show(message.toString());
+    }
+
+    public String getLatestMessage() {
+        return latestMessage;
+    }
+
+    /** Records a message and writes it to the console when console output is enabled. */
+    private void show(String message) {
+        latestMessage = message;
+        if (isConsoleOutputEnabled) {
+            System.out.println(SEPARATOR);
+            System.out.println(message);
+            System.out.println(SEPARATOR);
+        }
     }
 
     /** Returns whether an event has a date range that includes the requested date. */

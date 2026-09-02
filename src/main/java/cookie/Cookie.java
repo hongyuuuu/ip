@@ -16,6 +16,9 @@ import cookie.ui.Ui;
 
 /** The main entry point for the Cookie command-line application. */
 public class Cookie {
+    /** The default path used to store Cookie's task data. */
+    private static final String DEFAULT_FILE_PATH = "./data/cookie.txt";
+
     /** The tasks currently managed by this Cookie instance. */
     private final TaskList tasks;
 
@@ -28,13 +31,26 @@ public class Cookie {
     /** Interprets commands entered by the user. */
     private final Parser parser;
 
+    /** Whether the most recently processed command requested that Cookie exit. */
+    private boolean isExitRequested;
+
+    /** Creates Cookie for the GUI using the default task file. */
+    public Cookie() {
+        this(DEFAULT_FILE_PATH, false);
+    }
+
     /**
      * Creates Cookie with a task file at the specified path.
      *
      * @param filePath The path of the task file.
      */
     public Cookie(String filePath) {
-        this.ui = new Ui();
+        this(filePath, true);
+    }
+
+    /** Creates Cookie with the requested storage path and console output mode. */
+    Cookie(String filePath, boolean isConsoleOutputEnabled) {
+        this.ui = new Ui(isConsoleOutputEnabled);
         this.storage = new Storage(filePath);
         this.parser = new Parser();
         TaskList loadedTasks;
@@ -145,52 +161,57 @@ public class Cookie {
 
         Scanner scanner = new Scanner(System.in);
         while (scanner.hasNextLine()) {
-            String input = scanner.nextLine();
-            try {
-                Parser.ParsedCommand parsedCommand = parser.parse(input);
-                switch (parsedCommand.command()) {
-                    case BYE -> {
-                        parser.requireNoArguments(parsedCommand);
-                        ui.exit();
-                        return;
-                    }
-                    case LIST -> {
-                        parser.requireNoArguments(parsedCommand);
-                        list();
-                    }
-                    case MARK -> {
-                        markTask(parser.parseTaskIndex(parsedCommand, tasks.size()));
-                    }
-                    case UNMARK -> {
-                        unmarkTask(parser.parseTaskIndex(parsedCommand, tasks.size()));
-                    }
-                    case DELETE -> {
-                        deleteTask(parser.parseTaskIndex(parsedCommand, tasks.size()));
-                    }
-                    case ON -> {
-                        parser.requireSingleArgument(parsedCommand, "on <date>");
-                        listOnDate(parsedCommand.description());
-                    }
-                    case FIND -> {
-                        parser.requireSingleArgument(parsedCommand, "find <keyword>");
-                        findTasks(parsedCommand.argument(0));
-                    }
-                    case TODO -> {
-                        addTask(new Todo(
-                                parser.requireFileSafe(parser.requireDescription(parsedCommand))));
-                    }
-                    case DEADLINE -> {
-                        addDeadline(parsedCommand.description());
-                    }
-                    case EVENT -> {
-                        addEvent(parsedCommand.description());
-                    }
-                    default -> throw new AssertionError("Unhandled command: "
-                            + parsedCommand.command());
-                }
-            } catch (CookieException exception) {
-                ui.showError(exception);
+            getResponse(scanner.nextLine());
+            if (isExitRequested) {
+                return;
             }
+        }
+    }
+
+    /**
+     * Processes one user command and returns Cookie's response.
+     *
+     * @param input The command entered by the user.
+     * @return Cookie's response to the command.
+     */
+    public String getResponse(String input) {
+        isExitRequested = false;
+        try {
+            execute(parser.parse(input));
+        } catch (CookieException exception) {
+            ui.showError(exception);
+        }
+        return ui.getLatestMessage();
+    }
+
+    /** Executes a parsed command against Cookie's current task list. */
+    private void execute(Parser.ParsedCommand parsedCommand) throws CookieException {
+        switch (parsedCommand.command()) {
+            case BYE -> {
+                parser.requireNoArguments(parsedCommand);
+                ui.exit();
+                isExitRequested = true;
+            }
+            case LIST -> {
+                parser.requireNoArguments(parsedCommand);
+                list();
+            }
+            case MARK -> markTask(parser.parseTaskIndex(parsedCommand, tasks.size()));
+            case UNMARK -> unmarkTask(parser.parseTaskIndex(parsedCommand, tasks.size()));
+            case DELETE -> deleteTask(parser.parseTaskIndex(parsedCommand, tasks.size()));
+            case ON -> {
+                parser.requireSingleArgument(parsedCommand, "on <date>");
+                listOnDate(parsedCommand.description());
+            }
+            case FIND -> {
+                parser.requireSingleArgument(parsedCommand, "find <keyword>");
+                findTasks(parsedCommand.argument(0));
+            }
+            case TODO -> addTask(new Todo(
+                    parser.requireFileSafe(parser.requireDescription(parsedCommand))));
+            case DEADLINE -> addDeadline(parsedCommand.description());
+            case EVENT -> addEvent(parsedCommand.description());
+            default -> throw new AssertionError("Unhandled command: " + parsedCommand.command());
         }
     }
 
@@ -200,6 +221,6 @@ public class Cookie {
      * @param args Command-line arguments, which are ignored.
      */
     public static void main(String[] args) {
-        new Cookie("./data/cookie.txt").run();
+        new Cookie(DEFAULT_FILE_PATH).run();
     }
 }
