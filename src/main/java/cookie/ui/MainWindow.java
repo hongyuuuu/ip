@@ -11,9 +11,9 @@ import javafx.scene.layout.VBox;
 /** Controls Cookie's main chat window. */
 public class MainWindow extends AnchorPane {
     private final Image userImage = new Image(
-            getClass().getResourceAsStream("/images/DaUser.png"));
+            getClass().getResourceAsStream("/images/DaUser.jpg"));
     private final Image cookieImage = new Image(
-            getClass().getResourceAsStream("/images/DaCookie.png"));
+            getClass().getResourceAsStream("/images/DaCookie.jpg"));
 
     @FXML
     private ScrollPane scrollPane;
