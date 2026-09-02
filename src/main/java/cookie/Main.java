@@ -18,6 +18,7 @@ public class Main extends Application {
             getClass().getResourceAsStream("/images/DaUser.png"));
     private final Image cookieImage = new Image(
             getClass().getResourceAsStream("/images/DaCookie.png"));
+    private final Cookie cookie = new Cookie();
 
     private ScrollPane scrollPane;
     private VBox dialogContainer;
@@ -32,9 +33,6 @@ public class Main extends Application {
 
         userInput = new TextField();
         sendButton = new Button("Send");
-
-        DialogBox dialogBox = new DialogBox("Hello!", cookieImage);
-        dialogContainer.getChildren().add(dialogBox);
 
         AnchorPane mainLayout = new AnchorPane();
         mainLayout.getChildren().addAll(scrollPane, userInput, sendButton);
@@ -65,5 +63,19 @@ public class Main extends Application {
         AnchorPane.setRightAnchor(sendButton, 1.0);
         AnchorPane.setLeftAnchor(userInput, 1.0);
         AnchorPane.setBottomAnchor(userInput, 1.0);
+
+        sendButton.setOnMouseClicked(event -> handleUserInput());
+        userInput.setOnAction(event -> handleUserInput());
+        dialogContainer.heightProperty().addListener(observable -> scrollPane.setVvalue(1.0));
+    }
+
+    /** Adds the user's message and Cookie's response to the conversation. */
+    private void handleUserInput() {
+        String input = userInput.getText();
+        String response = cookie.getResponse(input);
+        dialogContainer.getChildren().addAll(
+                DialogBox.getUserDialog(input, userImage),
+                DialogBox.getCookieDialog(response, cookieImage));
+        userInput.clear();
     }
 }
