@@ -46,7 +46,10 @@ public class StorageTest {
     public void load_missingFile_returnsEmptyTaskList() throws IOException {
         Storage storage = new Storage(temporaryDirectory.resolve("missing.txt").toString());
 
-        assertEquals(0, storage.load().size());
+        Storage.LoadResult result = storage.load();
+
+        assertEquals(0, result.tasks().size());
+        assertTrue(result.malformedLineNumbers().isEmpty());
     }
 
     @Test
@@ -72,8 +75,10 @@ public class StorageTest {
                 "E | Not Done | team meeting | 09:00 to 10:30"),
                 Files.readAllLines(file));
 
-        TaskList loaded = storage.load();
+        Storage.LoadResult loadResult = storage.load();
+        TaskList loaded = loadResult.tasks();
         assertEquals(3, loaded.size());
+        assertTrue(loadResult.malformedLineNumbers().isEmpty());
         assertTrue(loaded.get(0) instanceof Todo);
         assertTrue(loaded.get(1) instanceof Deadline);
         assertTrue(loaded.get(2) instanceof Event);
@@ -102,9 +107,11 @@ public class StorageTest {
                 "E | Not Done | missing end | 09:00 to",
                 " "));
 
-        TaskList loaded = new Storage(file.toString()).load();
+        Storage.LoadResult loadResult = new Storage(file.toString()).load();
+        TaskList loaded = loadResult.tasks();
 
         assertEquals(2, loaded.size());
+        assertEquals(List.of(3, 4, 5, 6, 8), loadResult.malformedLineNumbers());
         assertEquals("valid todo", loaded.get(0).getDescription());
         assertTrue(loaded.get(0).isDone());
         assertEquals("valid event", loaded.get(1).getDescription());

@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
@@ -23,6 +24,7 @@ public class ParserTest {
         assertEquals(Command.TODO, parsed.command());
         assertEquals("ToDo", parsed.action());
         assertEquals(2, parsed.argumentCount());
+        assertEquals(List.of("buy", "milk"), parsed.arguments());
         assertEquals("buy", parsed.argument(0));
         assertEquals("milk", parsed.argument(1));
         assertEquals("buy   milk", parsed.description());

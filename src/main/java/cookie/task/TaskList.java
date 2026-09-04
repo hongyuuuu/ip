@@ -1,11 +1,16 @@
 package cookie.task;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
 /** Owns the ordered collection of tasks managed by Cookie. */
 public class TaskList implements Iterable<Task> {
+    /** Associates a matching task with its one-based number in the full task list. */
+    public record IndexedTask(int taskNumber, Task task) {
+    }
+
     /** The tasks in their display and persistence order. */
     private final ArrayList<Task> tasks;
 
@@ -91,6 +96,40 @@ public class TaskList implements Iterable<Task> {
      */
     public int size() {
         return tasks.size();
+    }
+
+    /**
+     * Finds tasks whose descriptions contain the requested keyword.
+     *
+     * @param keyword The keyword to find.
+     * @return The matching tasks with their original one-based task numbers.
+     */
+    public List<IndexedTask> find(String keyword) {
+        List<IndexedTask> matchingTasks = new ArrayList<>();
+        for (int index = 0; index < tasks.size(); index++) {
+            Task task = tasks.get(index);
+            if (task.containsKeyword(keyword)) {
+                matchingTasks.add(new IndexedTask(index + 1, task));
+            }
+        }
+        return List.copyOf(matchingTasks);
+    }
+
+    /**
+     * Finds deadlines and events that occur on the requested date.
+     *
+     * @param date The date to check.
+     * @return The matching tasks with their original one-based task numbers.
+     */
+    public List<IndexedTask> findOn(LocalDate date) {
+        List<IndexedTask> matchingTasks = new ArrayList<>();
+        for (int index = 0; index < tasks.size(); index++) {
+            Task task = tasks.get(index);
+            if (task.occursOn(date)) {
+                matchingTasks.add(new IndexedTask(index + 1, task));
+            }
+        }
+        return List.copyOf(matchingTasks);
     }
 
     /**

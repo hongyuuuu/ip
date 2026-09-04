@@ -1,5 +1,7 @@
 package cookie.task;
 
+import java.time.LocalDate;
+
 /** Serves as a template for more specific task types. */
 public abstract class Task {
     /** The task description. */
@@ -43,6 +45,29 @@ public abstract class Task {
      */
     public boolean isDone() {
         return this.isDone;
+    }
+
+    /**
+     * Returns whether this task's description contains the requested keyword.
+     *
+     * @param keyword The keyword to find.
+     * @return {@code true} if the description contains the keyword.
+     */
+    public boolean containsKeyword(String keyword) {
+        return description.contains(keyword);
+    }
+
+    /**
+     * Returns whether this task occurs on the requested date.
+     *
+     * <p>Tasks without calendar information do not occur on any date. Dated task
+     * subtypes override this method with their matching rules.
+     *
+     * @param date The date to check.
+     * @return {@code true} if the task occurs on the date.
+     */
+    public boolean occursOn(LocalDate date) {
+        return false;
     }
 
     /** Marks the task as done. */

@@ -2,6 +2,7 @@ package cookie;
 
 import java.io.IOException;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Scanner;
 
 import cookie.command.CookieException;
@@ -12,6 +13,9 @@ import cookie.task.Event;
 import cookie.task.Task;
 import cookie.task.TaskList;
 import cookie.task.Todo;
+import cookie.ui.ConsoleOutput;
+import cookie.ui.Output;
+import cookie.ui.ReplyCollector;
 import cookie.ui.Ui;
 
 /** The main entry point for the Cookie command-line application. */
@@ -30,6 +34,15 @@ public class Cookie {
 
     /** Interprets commands entered by the user. */
     private final Parser parser;
+
+    /** Collects each command's messages for the JavaFX response API and tests. */
+    private final ReplyCollector replyCollector;
+
+    /** Malformed save-file lines skipped during startup. */
+    private final List<Integer> malformedLineNumbers;
+
+    /** Details of a file-reading failure encountered during startup, if any. */
+    private final String loadErrorDetails;
 
     /** Whether the most recently processed command requested that Cookie exit. */
     private boolean isExitRequested;
@@ -50,17 +63,29 @@ public class Cookie {
 
     /** Creates Cookie with the requested storage path and console output mode. */
     Cookie(String filePath, boolean isConsoleOutputEnabled) {
-        this.ui = new Ui(isConsoleOutputEnabled);
+        this.replyCollector = new ReplyCollector();
+        Output output = isConsoleOutputEnabled
+                ? Output.combine(replyCollector, new ConsoleOutput())
+                : replyCollector;
+        this.ui = new Ui(output);
         this.storage = new Storage(filePath);
         this.parser = new Parser();
         TaskList loadedTasks;
+        List<Integer> skippedLineNumbers;
+        String loadingError;
         try {
-            loadedTasks = storage.load();
+            Storage.LoadResult loadResult = storage.load();
+            loadedTasks = loadResult.tasks();
+            skippedLineNumbers = loadResult.malformedLineNumbers();
+            loadingError = null;
         } catch (IOException exception) {
-            ui.showLoadError(exception.getMessage());
             loadedTasks = new TaskList();
+            skippedLineNumbers = List.of();
+            loadingError = exception.getMessage();
         }
         this.tasks = loadedTasks;
+        this.malformedLineNumbers = skippedLineNumbers;
+        this.loadErrorDetails = loadingError;
     }
 
     /** Stores user input and prints the message indicating a successful addition. */
@@ -136,12 +161,12 @@ public class Cookie {
     /** Displays deadlines and events that occur on the requested calendar date. */
     private void listOnDate(String value) throws CookieException {
         LocalDate date = parser.parseDate(value);
-        ui.showTasksOnDate(date, tasks);
+        ui.showTasksOnDate(date, tasks.findOn(date));
     }
 
     /** Displays tasks whose descriptions contain the requested keyword. */
     private void findTasks(String keyword) {
-        ui.showMatchingTasks(keyword, tasks);
+        ui.showMatchingTasks(tasks.find(keyword));
     }
 
     /** Saves the current task list to the data file and reports whether it succeeded. */
@@ -157,7 +182,9 @@ public class Cookie {
 
     /** Reads and responds to commands until the user enters {@code bye}. */
     public void run() {
+        replyCollector.clear();
         ui.greet();
+        showStartupIssues();
 
         Scanner scanner = new Scanner(System.in);
         while (scanner.hasNextLine()) {
@@ -175,13 +202,34 @@ public class Cookie {
      * @return Cookie's response to the command.
      */
     public String getResponse(String input) {
+        replyCollector.clear();
         isExitRequested = false;
         try {
             execute(parser.parse(input));
         } catch (CookieException exception) {
             ui.showError(exception);
         }
-        return ui.getLatestMessage();
+        return replyCollector.getReply();
+    }
+
+    /**
+     * Returns any warning or error produced while loading saved tasks.
+     *
+     * @return The startup issue message, or an empty string when loading succeeded cleanly.
+     */
+    public String getStartupResponse() {
+        replyCollector.clear();
+        showStartupIssues();
+        return replyCollector.getReply();
+    }
+
+    /** Reports file-reading failures or malformed records detected during startup. */
+    private void showStartupIssues() {
+        if (loadErrorDetails != null) {
+            ui.showLoadError(loadErrorDetails);
+        } else if (!malformedLineNumbers.isEmpty()) {
+            ui.showMalformedRecords(malformedLineNumbers);
+        }
     }
 
     /** Executes a parsed command against Cookie's current task list. */

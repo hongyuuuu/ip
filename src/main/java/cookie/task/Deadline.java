@@ -1,5 +1,7 @@
 package cookie.task;
 
+import java.time.LocalDate;
+
 /** Represents a task with a deadline. */
 public class Deadline extends Task {
 
@@ -24,6 +26,12 @@ public class Deadline extends Task {
      */
     public DateTimeValue getBy() {
         return this.by;
+    }
+
+    /** Returns whether this deadline is due on the requested date. */
+    @Override
+    public boolean occursOn(LocalDate date) {
+        return date.equals(by.getDate());
     }
 
     /**

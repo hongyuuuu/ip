@@ -6,6 +6,7 @@ import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.time.format.ResolverStyle;
+import java.util.List;
 import java.util.Locale;
 
 import cookie.task.DateTimeValue;
@@ -57,7 +58,8 @@ public class Parser {
         String[] parts = normalizedInput.split("\\s+");
         String action = parts[0];
         String description = normalizedInput.substring(action.length()).trim();
-        return new ParsedCommand(Command.fromString(action), action, parts, description);
+        List<String> arguments = List.of(parts).subList(1, parts.length);
+        return new ParsedCommand(Command.fromString(action), action, arguments, description);
     }
 
     /**
@@ -268,43 +270,19 @@ public class Parser {
         return taskNumber - 1;
     }
 
-    /** Holds the command, original action word, arguments, and description from user input. */
-    public static final class ParsedCommand {
-        /** The command resolved from the user's action word. */
-        private final Command command;
-
-        /** The action word as entered by the user. */
-        private final String action;
-
-        /** The whitespace-separated words following the action word. */
-        private final String[] parts;
-
-        /** The text following the action word, preserving its internal spaces. */
-        private final String description;
-
-        private ParsedCommand(Command command, String action, String[] parts, String description) {
-            this.command = command;
-            this.action = action;
-            this.parts = parts;
-            this.description = description;
-        }
-
-        /**
-         * Returns the resolved command.
-         *
-         * @return The resolved command.
-         */
-        public Command command() {
-            return command;
-        }
-
-        /**
-         * Returns the action word as entered by the user.
-         *
-         * @return The original action word.
-         */
-        public String action() {
-            return action;
+    /**
+     * Holds the command, original action word, arguments, and description from user input.
+     *
+     * @param command The command resolved from the action word.
+     * @param action The action word as entered by the user.
+     * @param arguments The whitespace-separated arguments following the action word.
+     * @param description The text following the action word, preserving its internal spaces.
+     */
+    public record ParsedCommand(Command command, String action, List<String> arguments,
+                                String description) {
+        /** Creates a parsed command with an immutable copy of its arguments. */
+        public ParsedCommand {
+            arguments = List.copyOf(arguments);
         }
 
         /**
@@ -313,7 +291,7 @@ public class Parser {
          * @return The number of arguments.
          */
         public int argumentCount() {
-            return parts.length - 1;
+            return arguments.size();
         }
 
         /**
@@ -323,93 +301,26 @@ public class Parser {
          * @return The argument at the specified position.
          */
         public String argument(int index) {
-            return parts[index + 1];
-        }
-
-        /**
-         * Returns the text following the action word.
-         *
-         * @return The command description.
-         */
-        public String description() {
-            return description;
+            return arguments.get(index);
         }
     }
 
-    /** Holds the parsed description and temporal value of a deadline command. */
-    public static final class ParsedDeadline {
-        /** The validated task description. */
-        private final String description;
-
-        /** The parsed deadline date or time. */
-        private final DateTimeValue dateTime;
-
-        private ParsedDeadline(String description, DateTimeValue dateTime) {
-            this.description = description;
-            this.dateTime = dateTime;
-        }
-
-        /**
-         * Returns the validated task description.
-         *
-         * @return The task description.
-         */
-        public String description() {
-            return description;
-        }
-
-        /**
-         * Returns the parsed deadline date or time.
-         *
-         * @return The deadline date or time.
-         */
-        public DateTimeValue dateTime() {
-            return dateTime;
-        }
+    /**
+     * Holds the validated values parsed from a deadline command.
+     *
+     * @param description The validated task description.
+     * @param dateTime The parsed deadline date or time.
+     */
+    public record ParsedDeadline(String description, DateTimeValue dateTime) {
     }
 
-    /** Holds the parsed description and temporal values of an event command. */
-    public static final class ParsedEvent {
-        /** The validated task description. */
-        private final String description;
-
-        /** The parsed event start date or time. */
-        private final DateTimeValue start;
-
-        /** The parsed event end date or time. */
-        private final DateTimeValue end;
-
-        private ParsedEvent(String description, DateTimeValue start, DateTimeValue end) {
-            this.description = description;
-            this.start = start;
-            this.end = end;
-        }
-
-        /**
-         * Returns the validated task description.
-         *
-         * @return The task description.
-         */
-        public String description() {
-            return description;
-        }
-
-        /**
-         * Returns the parsed event start date or time.
-         *
-         * @return The event start date or time.
-         */
-        public DateTimeValue start() {
-            return start;
-        }
-
-        /**
-         * Returns the parsed event end date or time.
-         *
-         * @return The event end date or time.
-         */
-        public DateTimeValue end() {
-            return end;
-        }
+    /**
+     * Holds the validated values parsed from an event command.
+     *
+     * @param description The validated event description.
+     * @param start The parsed event start date or time.
+     * @param end The parsed event end date or time.
+     */
+    public record ParsedEvent(String description, DateTimeValue start, DateTimeValue end) {
     }
 }

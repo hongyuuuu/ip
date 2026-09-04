@@ -1091,9 +1091,9 @@ Bye. I'm going to sleep.
 ____________________________________________________________
 ```
 
-## Test case 29: Ignore malformed saved records
+## Test case 29: Recover valid records and warn about malformed records
 
-**Aim:** Verify that malformed records and invalid statuses are ignored while valid records continue loading.
+**Aim:** Verify that malformed records are reported by line number while valid records continue loading.
 
 **Saved data:**
 ```text
@@ -1124,6 +1124,9 @@ ____________________________________________________________
  ╚═════╝ ╚═════╝  ╚═════╝ ╚═╝  ╚═╝╚═╝╚══════╝
 Hello! I'm your favourite chatbot Cookie.
 What do you need today?
+____________________________________________________________
+____________________________________________________________
+Heads up! I skipped malformed saved task records on lines 2, 3, 5. Your valid tasks were still loaded.
 ____________________________________________________________
 ____________________________________________________________
 Here are the task(s) in your list:

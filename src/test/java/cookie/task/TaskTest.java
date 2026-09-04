@@ -55,4 +55,19 @@ public class TaskTest {
         assertTrue(event.isDone());
         assertEquals("E | Done | team meeting | 09:00 to 10:30", event.toFileFormat());
     }
+
+    @Test
+    public void occursOn_differentTaskTypes_appliesSubtypeDateRules() {
+        LocalDate queriedDate = LocalDate.of(2026, 8, 27);
+        Todo todo = new Todo("ordinary todo");
+        Deadline deadline = new Deadline("submit report", new DateTimeValue(queriedDate, null));
+        Event event = new Event("conference",
+                new DateTimeValue(queriedDate.minusDays(1), null),
+                new DateTimeValue(queriedDate.plusDays(1), null));
+
+        assertFalse(todo.occursOn(queriedDate));
+        assertTrue(deadline.occursOn(queriedDate));
+        assertTrue(event.occursOn(queriedDate));
+        assertFalse(event.occursOn(queriedDate.plusDays(2)));
+    }
 }

@@ -4,6 +4,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -46,6 +48,25 @@ public class TaskListTest {
 
         assertEquals(List.of("first", "second"), toList(tasks).stream()
                 .map(Task::getDescription)
+                .toList());
+    }
+
+    @Test
+    public void findAndFindOn_matchingTasks_preserveOriginalTaskNumbers() {
+        LocalDate queriedDate = LocalDate.of(2026, 8, 27);
+        TaskList tasks = new TaskList(
+                new Todo("read book"),
+                new Todo("buy groceries"),
+                new Deadline("return book", new DateTimeValue(queriedDate, null)),
+                new Event("conference",
+                        new DateTimeValue(queriedDate.minusDays(1), LocalTime.of(9, 0)),
+                        new DateTimeValue(queriedDate.plusDays(1), LocalTime.of(17, 0))));
+
+        assertEquals(List.of(1, 3), tasks.find("book").stream()
+                .map(TaskList.IndexedTask::taskNumber)
+                .toList());
+        assertEquals(List.of(3, 4), tasks.findOn(queriedDate).stream()
+                .map(TaskList.IndexedTask::taskNumber)
                 .toList());
     }
 

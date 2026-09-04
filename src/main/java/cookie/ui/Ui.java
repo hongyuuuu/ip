@@ -2,41 +2,34 @@ package cookie.ui;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 import java.util.Locale;
 
 import cookie.command.CookieException;
-import cookie.task.Deadline;
-import cookie.task.Event;
 import cookie.task.Task;
 import cookie.task.TaskList;
 
 /** Handles Cookie's messages and other interactions with the user. */
 public class Ui {
-    /** Separates Cookie's messages in the console. */
-    private static final String SEPARATOR = "____________________________________________________________";
-
     /** Formats dates shown in date-based task queries. */
     private static final DateTimeFormatter DISPLAY_DATE_FORMAT =
             DateTimeFormatter.ofPattern("MMM dd yyyy", Locale.ENGLISH);
 
-    /** Whether messages should be written to the console. */
-    private final boolean isConsoleOutputEnabled;
+    /** Receives messages after the UI formats them. */
+    private final Output output;
 
-    /** The most recent message prepared for the user. */
-    private String latestMessage = "";
-
-    /** Creates a UI handler for Cookie. */
+    /** Creates a UI handler that writes messages to the console. */
     public Ui() {
-        this(true);
+        this(new ConsoleOutput());
     }
 
     /**
-     * Creates a UI handler with optional console output.
+     * Creates a UI handler that sends messages to the supplied output.
      *
-     * @param isConsoleOutputEnabled Whether messages should be written to the console.
+     * @param output The destination for formatted messages.
      */
-    public Ui(boolean isConsoleOutputEnabled) {
-        this.isConsoleOutputEnabled = isConsoleOutputEnabled;
+    public Ui(Output output) {
+        this.output = output;
     }
 
     /** Displays Cookie's greeting and the prompt for the first command. */
@@ -146,69 +139,45 @@ public class Ui {
     }
 
     /**
+     * Warns that malformed saved records were skipped while valid tasks were recovered.
+     *
+     * @param lineNumbers The one-based line numbers of malformed records.
+     */
+    public void showMalformedRecords(List<Integer> lineNumbers) {
+        String noun = lineNumbers.size() == 1 ? "line" : "lines";
+        String numbers = String.join(", ", lineNumbers.stream().map(String::valueOf).toList());
+        show("Heads up! I skipped malformed saved task records on " + noun + " " + numbers
+                + ". Your valid tasks were still loaded.");
+    }
+
+    /**
      * Displays deadlines and events that occur on the requested calendar date.
      *
      * @param date The date to search.
-     * @param tasks The tasks to search.
+     * @param matchingTasks The matching tasks and their original task numbers.
      */
-    public void showTasksOnDate(LocalDate date, TaskList tasks) {
+    public void showTasksOnDate(LocalDate date, List<TaskList.IndexedTask> matchingTasks) {
         StringBuilder message = new StringBuilder("Here are the task(s) on ")
                 .append(date.format(DISPLAY_DATE_FORMAT)).append(":");
-        for (int i = 0; i < tasks.size(); i++) {
-            Task task = tasks.get(i);
-            boolean occursOnDate = false;
-            if (task instanceof Deadline deadline) {
-                occursOnDate = date.equals(deadline.getBy().getDate());
-            } else if (task instanceof Event event) {
-                occursOnDate = occursOnDate(event, date);
-            }
-
-            if (occursOnDate) {
-                message.append(System.lineSeparator()).append(i + 1).append(". ").append(task);
-            }
+        for (TaskList.IndexedTask matchingTask : matchingTasks) {
+            message.append(System.lineSeparator()).append(matchingTask.taskNumber())
+                    .append(". ").append(matchingTask.task());
         }
         show(message.toString());
     }
 
-    /** Displays tasks whose descriptions contain the specified keyword. */
-    public void showMatchingTasks(String keyword, TaskList tasks) {
+    /** Displays tasks whose descriptions contain the requested keyword. */
+    public void showMatchingTasks(List<TaskList.IndexedTask> matchingTasks) {
         StringBuilder message = new StringBuilder("Here are the matching tasks in your list:");
-        for (int i = 0; i < tasks.size(); i++) {
-            Task task = tasks.get(i);
-            if (task.getDescription().contains(keyword)) {
-                message.append(System.lineSeparator()).append(i + 1).append(". ").append(task);
-            }
+        for (TaskList.IndexedTask matchingTask : matchingTasks) {
+            message.append(System.lineSeparator()).append(matchingTask.taskNumber())
+                    .append(". ").append(matchingTask.task());
         }
         show(message.toString());
     }
 
-    public String getLatestMessage() {
-        return latestMessage;
-    }
-
-    /** Records a message and writes it to the console when console output is enabled. */
+    /** Sends a formatted message to the configured output. */
     private void show(String message) {
-        latestMessage = message;
-        if (isConsoleOutputEnabled) {
-            System.out.println(SEPARATOR);
-            System.out.println(message);
-            System.out.println(SEPARATOR);
-        }
-    }
-
-    /** Returns whether an event has a date range that includes the requested date. */
-    private boolean occursOnDate(Event event, LocalDate date) {
-        LocalDate startDate = event.getStart().getDate();
-        LocalDate endDate = event.getEnd().getDate();
-        if (startDate == null && endDate == null) {
-            return false;
-        }
-        if (startDate == null) {
-            startDate = endDate;
-        }
-        if (endDate == null) {
-            endDate = startDate;
-        }
-        return !date.isBefore(startDate) && !date.isAfter(endDate);
+        output.show(message);
     }
 }

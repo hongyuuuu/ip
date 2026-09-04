@@ -1,5 +1,7 @@
 package cookie.task;
 
+import java.time.LocalDate;
+
 /** Represents a task with a start and end date or time. */
 public class Event extends Task {
 
@@ -38,6 +40,23 @@ public class Event extends Task {
      */
     public DateTimeValue getEnd() {
         return this.end;
+    }
+
+    /** Returns whether the requested date falls within this event's inclusive date range. */
+    @Override
+    public boolean occursOn(LocalDate date) {
+        LocalDate startDate = start.getDate();
+        LocalDate endDate = end.getDate();
+        if (startDate == null && endDate == null) {
+            return false;
+        }
+        if (startDate == null) {
+            startDate = endDate;
+        }
+        if (endDate == null) {
+            endDate = startDate;
+        }
+        return !date.isBefore(startDate) && !date.isAfter(endDate);
     }
 
     /**

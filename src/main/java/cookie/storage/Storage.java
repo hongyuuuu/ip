@@ -10,6 +10,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.time.format.DateTimeParseException;
+import java.util.ArrayList;
+import java.util.List;
 
 import cookie.command.CookieException;
 import cookie.task.DateTimeValue;
@@ -22,6 +24,19 @@ import cookie.task.Todo;
 
 /** Handles loading tasks from and saving tasks to Cookie's data file. */
 public class Storage {
+    /**
+     * Contains recovered tasks and the one-based line numbers of malformed records.
+     *
+     * @param tasks The tasks successfully loaded from storage.
+     * @param malformedLineNumbers The line numbers of records that could not be parsed.
+     */
+    public record LoadResult(TaskList tasks, List<Integer> malformedLineNumbers) {
+        /** Creates a load result with an immutable copy of its malformed line numbers. */
+        public LoadResult {
+            malformedLineNumbers = List.copyOf(malformedLineNumbers);
+        }
+    }
+
     /** The file used to persist Cookie's tasks. */
     private final Path filePath;
 
@@ -37,18 +52,21 @@ public class Storage {
     /**
      * Loads valid task records from the data file, or an empty list if it does not exist.
      *
-     * @return The loaded tasks.
+     * @return The loaded tasks and line numbers of malformed records that were skipped.
      * @throws IOException If the data file cannot be read.
      */
-    public TaskList load() throws IOException {
+    public LoadResult load() throws IOException {
         TaskList tasks = new TaskList();
+        List<Integer> malformedLineNumbers = new ArrayList<>();
         if (!Files.exists(filePath)) {
-            return tasks;
+            return new LoadResult(tasks, malformedLineNumbers);
         }
 
         try (BufferedReader reader = Files.newBufferedReader(filePath, StandardCharsets.UTF_8)) {
             String line;
+            int lineNumber = 0;
             while ((line = reader.readLine()) != null) {
+                lineNumber++;
                 if (line.isBlank()) {
                     continue;
                 }
@@ -56,11 +74,11 @@ public class Storage {
                 try {
                     tasks.add(parseTask(line));
                 } catch (CookieException exception) {
-                    // Ignore malformed records so one bad line does not prevent startup.
+                    malformedLineNumbers.add(lineNumber);
                 }
             }
         }
-        return tasks;
+        return new LoadResult(tasks, malformedLineNumbers);
     }
 
     /**

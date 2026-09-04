@@ -39,6 +39,11 @@ public class MainWindow extends AnchorPane {
      */
     public void setCookie(Cookie cookie) {
         this.cookie = cookie;
+        String startupResponse = cookie.getStartupResponse();
+        if (!startupResponse.isBlank()) {
+            dialogContainer.getChildren().add(
+                    DialogBox.getCookieDialog(startupResponse, cookieImage));
+        }
     }
 
     /** Adds the user's message and Cookie's response to the conversation. */
