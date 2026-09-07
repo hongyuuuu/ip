@@ -1,5 +1,7 @@
 package cookie.task;
 
+import java.util.Arrays;
+
 import cookie.command.CookieException;
 
 /** Represents the task types supported by Cookie and their storage codes. */
@@ -36,12 +38,11 @@ public enum TaskType {
      * @throws CookieException If the code is not recognized.
      */
     public static TaskType fromCode(String code) throws CookieException {
-        for (TaskType type : TaskType.values()) {
-            if (type.code.equalsIgnoreCase(code)) {
-                return type;
-            }
-        }
-        throw new CookieException("I have never seen this task type '" + code + "' before.");
+        return Arrays.stream(TaskType.values())
+                .filter(type -> type.code.equalsIgnoreCase(code))
+                .findFirst()
+                .orElseThrow(() -> new CookieException(
+                        "I have never seen this task type '" + code + "' before."));
     }
 }
 

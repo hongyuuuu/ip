@@ -1,5 +1,6 @@
 package cookie.ui;
 
+import java.util.Arrays;
 import java.util.Objects;
 
 /** Receives messages produced by Cookie's user-interface layer. */
@@ -20,13 +21,7 @@ public interface Output {
      */
     static Output combine(Output... outputs) {
         Output[] outputCopy = outputs.clone();
-        for (Output output : outputCopy) {
-            Objects.requireNonNull(output);
-        }
-        return message -> {
-            for (Output output : outputCopy) {
-                output.show(message);
-            }
-        };
+        Arrays.stream(outputCopy).forEach(Objects::requireNonNull);
+        return message -> Arrays.stream(outputCopy).forEach(output -> output.show(message));
     }
 }

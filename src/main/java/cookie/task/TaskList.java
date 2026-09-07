@@ -4,6 +4,8 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.function.Predicate;
+import java.util.stream.IntStream;
 
 /** Owns the ordered collection of tasks managed by Cookie. */
 public class TaskList implements Iterable<Task> {
@@ -105,14 +107,7 @@ public class TaskList implements Iterable<Task> {
      * @return The matching tasks with their original one-based task numbers.
      */
     public List<IndexedTask> find(String keyword) {
-        List<IndexedTask> matchingTasks = new ArrayList<>();
-        for (int index = 0; index < tasks.size(); index++) {
-            Task task = tasks.get(index);
-            if (task.containsKeyword(keyword)) {
-                matchingTasks.add(new IndexedTask(index + 1, task));
-            }
-        }
-        return List.copyOf(matchingTasks);
+        return findMatching(task -> task.containsKeyword(keyword));
     }
 
     /**
@@ -122,14 +117,20 @@ public class TaskList implements Iterable<Task> {
      * @return The matching tasks with their original one-based task numbers.
      */
     public List<IndexedTask> findOn(LocalDate date) {
-        List<IndexedTask> matchingTasks = new ArrayList<>();
-        for (int index = 0; index < tasks.size(); index++) {
-            Task task = tasks.get(index);
-            if (task.occursOn(date)) {
-                matchingTasks.add(new IndexedTask(index + 1, task));
-            }
-        }
-        return List.copyOf(matchingTasks);
+        return findMatching(task -> task.occursOn(date));
+    }
+
+    /**
+     * Returns tasks that satisfy a condition together with their one-based task numbers.
+     *
+     * @param condition The condition used to select tasks.
+     * @return The matching indexed tasks.
+     */
+    private List<IndexedTask> findMatching(Predicate<Task> condition) {
+        return IntStream.range(0, tasks.size())
+                .filter(index -> condition.test(tasks.get(index)))
+                .mapToObj(index -> new IndexedTask(index + 1, tasks.get(index)))
+                .toList();
     }
 
     /**
