@@ -253,6 +253,7 @@ public class Parser {
      * @throws CookieException If the task number is missing, invalid, or out of range.
      */
     public int parseTaskIndex(ParsedCommand command, int taskCount) throws CookieException {
+        assert taskCount >= 0 : "A task count must not be negative";
         if (command.argumentCount() != 1) {
             throw new CookieException("Usage: " + command.action() + " <task number>.");
         }
@@ -267,7 +268,10 @@ public class Parser {
         if (taskNumber < 1 || taskNumber > taskCount) {
             throw new CookieException("There is no task numbered " + taskNumber + ".");
         }
-        return taskNumber - 1;
+        int taskIndex = taskNumber - 1;
+        assert taskIndex >= 0 && taskIndex < taskCount
+                : "A validated task number must map to an existing zero-based index";
+        return taskIndex;
     }
 
     /**

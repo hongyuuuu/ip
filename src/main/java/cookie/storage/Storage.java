@@ -165,11 +165,14 @@ public class Storage {
             default -> throw new CookieException("A saved task record is malformed.");
         }
 
-        if ("Done".equalsIgnoreCase(fields[1])) {
+        boolean isStoredAsDone = "Done".equalsIgnoreCase(fields[1]);
+        if (isStoredAsDone) {
             task.mark();
         } else if (!"Not Done".equalsIgnoreCase(fields[1])) {
             throw new CookieException("A saved task record has an invalid status.");
         }
+        assert task.isDone() == isStoredAsDone
+                : "A loaded task's state must match its validated stored status";
         return task;
     }
 }

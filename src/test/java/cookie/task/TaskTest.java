@@ -2,6 +2,7 @@ package cookie.task;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.LocalDate;
@@ -11,6 +12,18 @@ import org.junit.jupiter.api.Test;
 
 /** Tests task state transitions and type-specific representations. */
 public class TaskTest {
+    @Test
+    public void constructors_invalidInternalState_triggerAssertionErrors() {
+        DateTimeValue date = new DateTimeValue(LocalDate.of(2026, 8, 27), null);
+
+        assertThrows(AssertionError.class, () -> new Todo(null));
+        assertThrows(AssertionError.class, () -> new Todo(" "));
+        assertThrows(AssertionError.class, () -> new Todo("unsafe | description"));
+        assertThrows(AssertionError.class, () -> new Deadline("submit report", null));
+        assertThrows(AssertionError.class, () -> new Event("meeting", null, date));
+        assertThrows(AssertionError.class, () -> new Event("meeting", date, null));
+    }
+
     @Test
     public void todo_initialStateAndMarking_updatesStatusAndRepresentations() {
         Todo todo = new Todo("buy milk");
