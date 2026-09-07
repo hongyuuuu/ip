@@ -104,15 +104,15 @@ public class Cookie {
     }
 
     /** Marks a task as done and prints a message indicating the successful update. */
-    private void markTask(int idx) {
-        Task task = tasks.get(idx);
+    private void markTask(int taskIndex) {
+        Task task = tasks.get(taskIndex);
         boolean wasDone = task.isDone();
-        tasks.mark(idx);
+        tasks.mark(taskIndex);
         if (!saveTasks()) {
             if (wasDone) {
-                tasks.mark(idx);
+                tasks.mark(taskIndex);
             } else {
-                tasks.unmark(idx);
+                tasks.unmark(taskIndex);
             }
             return;
         }
@@ -120,15 +120,15 @@ public class Cookie {
     }
 
     /** Marks a task as not done and prints a message indicating the successful update. */
-    private void unmarkTask(int idx) {
-        Task task = tasks.get(idx);
+    private void unmarkTask(int taskIndex) {
+        Task task = tasks.get(taskIndex);
         boolean wasDone = task.isDone();
-        tasks.unmark(idx);
+        tasks.unmark(taskIndex);
         if (!saveTasks()) {
             if (wasDone) {
-                tasks.mark(idx);
+                tasks.mark(taskIndex);
             } else {
-                tasks.unmark(idx);
+                tasks.unmark(taskIndex);
             }
             return;
         }
@@ -136,11 +136,11 @@ public class Cookie {
     }
 
     /** Deletes the selected task and reports the removed task and remaining task count. */
-    private void deleteTask(int idx) {
-        Task task = tasks.get(idx);
-        tasks.delete(idx);
+    private void deleteTask(int taskIndex) {
+        Task task = tasks.get(taskIndex);
+        tasks.delete(taskIndex);
         if (!saveTasks()) {
-            tasks.add(idx, task);
+            tasks.add(taskIndex, task);
             return;
         }
         ui.showTaskDeleted(task, tasks.size());

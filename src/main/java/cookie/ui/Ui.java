@@ -73,9 +73,9 @@ public class Ui {
      */
     public void showTaskList(TaskList tasks) {
         StringBuilder message = new StringBuilder("Here are the task(s) in your list:");
-        for (int i = 0; i < tasks.size(); i++) {
-            Task task = tasks.get(i);
-            message.append(System.lineSeparator()).append(i + 1).append(". ").append(task);
+        for (int taskIndex = 0; taskIndex < tasks.size(); taskIndex++) {
+            Task task = tasks.get(taskIndex);
+            message.append(System.lineSeparator()).append(taskIndex + 1).append(". ").append(task);
         }
         show(message.toString());
     }
