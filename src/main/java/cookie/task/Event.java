@@ -6,10 +6,10 @@ import java.time.LocalDate;
 public class Event extends Task {
 
     /** Stores the event's starting date or time. */
-    protected DateTimeValue start;
+    private final DateTimeValue start;
 
     /** Stores the event's ending date or time. */
-    protected DateTimeValue end;
+    private final DateTimeValue end;
 
     /**
      * Creates an event task with the specified description, start, and end values.
@@ -20,6 +20,8 @@ public class Event extends Task {
      */
     public Event(String description, DateTimeValue start, DateTimeValue end) {
         super(description);
+        assert start != null : "An event must have a start date or time";
+        assert end != null : "An event must have an end date or time";
         this.start = start;
         this.end = end;
     }
@@ -56,6 +58,8 @@ public class Event extends Task {
         if (endDate == null) {
             endDate = startDate;
         }
+        assert startDate != null && endDate != null
+                : "A date-bearing event must have complete date bounds after normalization";
         return !date.isBefore(startDate) && !date.isAfter(endDate);
     }
 
@@ -66,8 +70,8 @@ public class Event extends Task {
      */
     @Override
     public String toFileFormat() {
-        return "E | " + (this.isDone ? "Done | " : "Not Done | ") + this.description
-                + " | " + this.start.toStorageString() + " to " + this.end.toStorageString();
+        return formatForStorage(TaskType.EVENT) + " | " + start.toStorageString()
+                + " to " + end.toStorageString();
     }
 
     /**

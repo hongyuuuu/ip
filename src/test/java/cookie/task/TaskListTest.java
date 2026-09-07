@@ -2,6 +2,7 @@ package cookie.task;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.LocalDate;
@@ -13,6 +14,22 @@ import org.junit.jupiter.api.Test;
 
 /** Tests ordered task-list operations and iteration. */
 public class TaskListTest {
+    @Test
+    public void taskList_invalidInternalState_triggersAssertionErrors() {
+        Todo task = new Todo("valid task");
+        TaskList tasks = new TaskList(task);
+        List<Task> tasksWithNull = new ArrayList<>();
+        tasksWithNull.add(task);
+        tasksWithNull.add(null);
+
+        assertThrows(AssertionError.class, () -> new TaskList((List<Task>) null));
+        assertThrows(AssertionError.class, () -> new TaskList(tasksWithNull));
+        assertThrows(AssertionError.class, () -> tasks.add(null));
+        assertThrows(AssertionError.class, () -> tasks.add(0, null));
+        assertThrows(AssertionError.class, () -> new TaskList.IndexedTask(0, task));
+        assertThrows(AssertionError.class, () -> new TaskList.IndexedTask(1, null));
+    }
+
     @Test
     public void taskList_addInsertDeleteAndGet_maintainsOrder() {
         Todo first = new Todo("first");
