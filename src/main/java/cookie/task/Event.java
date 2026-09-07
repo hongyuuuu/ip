@@ -6,10 +6,10 @@ import java.time.LocalDate;
 public class Event extends Task {
 
     /** Stores the event's starting date or time. */
-    protected DateTimeValue start;
+    private final DateTimeValue start;
 
     /** Stores the event's ending date or time. */
-    protected DateTimeValue end;
+    private final DateTimeValue end;
 
     /**
      * Creates an event task with the specified description, start, and end values.
@@ -66,8 +66,8 @@ public class Event extends Task {
      */
     @Override
     public String toFileFormat() {
-        return "E | " + (this.isDone ? "Done | " : "Not Done | ") + this.description
-                + " | " + this.start.toStorageString() + " to " + this.end.toStorageString();
+        return formatForStorage(TaskType.EVENT) + " | " + start.toStorageString()
+                + " to " + end.toStorageString();
     }
 
     /**
