@@ -9,6 +9,11 @@ import java.util.List;
 public class TaskList implements Iterable<Task> {
     /** Associates a matching task with its one-based number in the full task list. */
     public record IndexedTask(int taskNumber, Task task) {
+        /** Creates a valid one-based task reference. */
+        public IndexedTask {
+            assert taskNumber > 0 : "A displayed task number must be positive";
+            assert task != null : "An indexed task must refer to a task";
+        }
     }
 
     /** The tasks in their display and persistence order. */
@@ -29,6 +34,9 @@ public class TaskList implements Iterable<Task> {
      * @param tasks The tasks to copy into this list.
      */
     public TaskList(List<Task> tasks) {
+        assert tasks != null : "The initial task collection must not be null";
+        assert tasks.stream().noneMatch(task -> task == null)
+                : "The initial task collection must not contain null";
         this.tasks = new ArrayList<>(tasks);
     }
 
@@ -38,6 +46,7 @@ public class TaskList implements Iterable<Task> {
      * @param task The task to add.
      */
     public void add(Task task) {
+        assert task != null : "A task list must not contain null";
         tasks.add(task);
     }
 
@@ -48,6 +57,7 @@ public class TaskList implements Iterable<Task> {
      * @param task The task to insert.
      */
     public void add(int index, Task task) {
+        assert task != null : "A task list must not contain null";
         tasks.add(index, task);
     }
 
