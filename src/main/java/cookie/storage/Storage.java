@@ -24,6 +24,33 @@ import cookie.task.Todo;
 
 /** Handles loading tasks from and saving tasks to Cookie's data file. */
 public class Storage {
+    /** Position of the task type in a saved record. */
+    private static final int TYPE_FIELD_INDEX = 0;
+
+    /** Position of the task status in a saved record. */
+    private static final int STATUS_FIELD_INDEX = 1;
+
+    /** Position of the task description in a saved record. */
+    private static final int DESCRIPTION_FIELD_INDEX = 2;
+
+    /** Position of date or time details in a saved record. */
+    private static final int DETAILS_FIELD_INDEX = 3;
+
+    /** Number of fields in a saved todo record. */
+    private static final int TODO_FIELD_COUNT = 3;
+
+    /** Number of fields in a saved deadline or event record. */
+    private static final int DATED_TASK_FIELD_COUNT = 4;
+
+    /** Number of temporal values in a saved event's details field. */
+    private static final int EVENT_TIME_VALUE_COUNT = 2;
+
+    /** Position of the start value in a saved event's details field. */
+    private static final int EVENT_START_VALUE_INDEX = 0;
+
+    /** Position of the end value in a saved event's details field. */
+    private static final int EVENT_END_VALUE_INDEX = 1;
+
     /**
      * Contains recovered tasks and the one-based line numbers of malformed records.
      *
@@ -125,51 +152,69 @@ public class Storage {
     /** Converts one saved task record into a task object. */
     private Task parseTask(String line) throws CookieException {
         String[] fields = line.trim().split("\\s*\\|\\s*", -1);
-        if (fields.length < 3) {
+        if (fields.length < TODO_FIELD_COUNT) {
             throw new CookieException("A saved task record is incomplete.");
         }
 
-        Task task;
-        switch (TaskType.fromCode(fields[0])) {
-            case TODO -> {
-                if (fields.length != 3 || fields[2].isBlank()) {
-                    throw new CookieException("A saved todo record is malformed.");
-                }
-                task = new Todo(fields[2]);
-            }
-            case DEADLINE -> {
-                if (fields.length != 4 || fields[2].isBlank() || fields[3].isBlank()) {
-                    throw new CookieException("A saved deadline record is malformed.");
-                }
-                try {
-                    task = new Deadline(fields[2], DateTimeValue.parseStorageValue(fields[3]));
-                } catch (DateTimeParseException exception) {
-                    throw new CookieException("A saved deadline record is malformed.");
-                }
-            }
-            case EVENT -> {
-                if (fields.length != 4 || fields[2].isBlank()) {
-                    throw new CookieException("A saved event record is malformed.");
-                }
-                String[] times = fields[3].split("\\s+to\\s+", 2);
-                if (times.length != 2 || times[0].isBlank() || times[1].isBlank()) {
-                    throw new CookieException("A saved event record is malformed.");
-                }
-                try {
-                    task = new Event(fields[2], DateTimeValue.parseStorageValue(times[0]),
-                            DateTimeValue.parseStorageValue(times[1]));
-                } catch (DateTimeParseException exception) {
-                    throw new CookieException("A saved event record is malformed.");
-                }
-            }
+        Task task = switch (TaskType.fromCode(fields[TYPE_FIELD_INDEX])) {
+            case TODO -> parseTodo(fields);
+            case DEADLINE -> parseDeadline(fields);
+            case EVENT -> parseEvent(fields);
             default -> throw new CookieException("A saved task record is malformed.");
+        };
+        restoreStatus(task, fields[STATUS_FIELD_INDEX]);
+        return task;
+    }
+
+    /** Creates a todo from a validated saved-record shape. */
+    private Todo parseTodo(String[] fields) throws CookieException {
+        if (fields.length != TODO_FIELD_COUNT || fields[DESCRIPTION_FIELD_INDEX].isBlank()) {
+            throw new CookieException("A saved todo record is malformed.");
+        }
+        return new Todo(fields[DESCRIPTION_FIELD_INDEX]);
+    }
+
+    /** Creates a deadline from a validated saved-record shape. */
+    private Deadline parseDeadline(String[] fields) throws CookieException {
+        if (fields.length != DATED_TASK_FIELD_COUNT || fields[DESCRIPTION_FIELD_INDEX].isBlank()
+                || fields[DETAILS_FIELD_INDEX].isBlank()) {
+            throw new CookieException("A saved deadline record is malformed.");
+        }
+        try {
+            DateTimeValue deadline = DateTimeValue.parseStorageValue(fields[DETAILS_FIELD_INDEX]);
+            return new Deadline(fields[DESCRIPTION_FIELD_INDEX], deadline);
+        } catch (DateTimeParseException exception) {
+            throw new CookieException("A saved deadline record is malformed.");
+        }
+    }
+
+    /** Creates an event from a validated saved-record shape. */
+    private Event parseEvent(String[] fields) throws CookieException {
+        if (fields.length != DATED_TASK_FIELD_COUNT || fields[DESCRIPTION_FIELD_INDEX].isBlank()) {
+            throw new CookieException("A saved event record is malformed.");
         }
 
-        if ("Done".equalsIgnoreCase(fields[1])) {
+        String[] timeValues = fields[DETAILS_FIELD_INDEX].split("\\s+to\\s+", EVENT_TIME_VALUE_COUNT);
+        if (timeValues.length != EVENT_TIME_VALUE_COUNT
+                || timeValues[EVENT_START_VALUE_INDEX].isBlank()
+                || timeValues[EVENT_END_VALUE_INDEX].isBlank()) {
+            throw new CookieException("A saved event record is malformed.");
+        }
+        try {
+            DateTimeValue start = DateTimeValue.parseStorageValue(timeValues[EVENT_START_VALUE_INDEX]);
+            DateTimeValue end = DateTimeValue.parseStorageValue(timeValues[EVENT_END_VALUE_INDEX]);
+            return new Event(fields[DESCRIPTION_FIELD_INDEX], start, end);
+        } catch (DateTimeParseException exception) {
+            throw new CookieException("A saved event record is malformed.");
+        }
+    }
+
+    /** Restores a saved completion status onto a task. */
+    private void restoreStatus(Task task, String status) throws CookieException {
+        if ("Done".equalsIgnoreCase(status)) {
             task.mark();
-        } else if (!"Not Done".equalsIgnoreCase(fields[1])) {
+        } else if (!"Not Done".equalsIgnoreCase(status)) {
             throw new CookieException("A saved task record has an invalid status.");
         }
-        return task;
     }
 }
