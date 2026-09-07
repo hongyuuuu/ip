@@ -172,6 +172,8 @@ public class ParserTest {
     public void parseTaskIndex_validAndInvalidNumbers_behavesCorrectly() throws CookieException {
         assertEquals(0, parser.parseTaskIndex(parser.parse("mark 1"), 3));
         assertEquals(2, parser.parseTaskIndex(parser.parse("mark 3"), 3));
+        assertThrows(AssertionError.class, () ->
+                parser.parseTaskIndex(parser.parse("mark 1"), -1));
 
         assertEquals("Usage: mark <task number>.",
                 assertThrows(CookieException.class, () ->

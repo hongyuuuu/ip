@@ -20,6 +20,8 @@ public class Event extends Task {
      */
     public Event(String description, DateTimeValue start, DateTimeValue end) {
         super(description);
+        assert start != null : "An event must have a start date or time";
+        assert end != null : "An event must have an end date or time";
         this.start = start;
         this.end = end;
     }
@@ -56,6 +58,8 @@ public class Event extends Task {
         if (endDate == null) {
             endDate = startDate;
         }
+        assert startDate != null && endDate != null
+                : "A date-bearing event must have complete date bounds after normalization";
         return !date.isBefore(startDate) && !date.isAfter(endDate);
     }
 

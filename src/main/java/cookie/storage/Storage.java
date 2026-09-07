@@ -211,10 +211,13 @@ public class Storage {
 
     /** Restores a saved completion status onto a task. */
     private void restoreStatus(Task task, String status) throws CookieException {
-        if ("Done".equalsIgnoreCase(status)) {
+        boolean isStoredAsDone = "Done".equalsIgnoreCase(status);
+        if (isStoredAsDone) {
             task.mark();
         } else if (!"Not Done".equalsIgnoreCase(status)) {
             throw new CookieException("A saved task record has an invalid status.");
         }
+        assert task.isDone() == isStoredAsDone
+                : "A loaded task's state must match its validated stored status";
     }
 }
