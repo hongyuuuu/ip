@@ -6,7 +6,7 @@ import java.time.LocalDate;
 public class Deadline extends Task {
 
     /** Stores the date or time by which the task should be completed. */
-    protected DateTimeValue by;
+    private final DateTimeValue by;
 
     /**
      * Creates a deadline task with the specified description and deadline.
@@ -42,8 +42,7 @@ public class Deadline extends Task {
      */
     @Override
     public String toFileFormat() {
-        return "D | " + (this.isDone ? "Done | " : "Not Done | ") + this.description
-                + " | " + this.by.toStorageString();
+        return formatForStorage(TaskType.DEADLINE) + " | " + by.toStorageString();
     }
 
     /**

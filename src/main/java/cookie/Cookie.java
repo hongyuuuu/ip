@@ -111,17 +111,17 @@ public class Cookie {
     }
 
     /** Marks a task as done and prints a message indicating the successful update. */
-    private void markTask(int idx) {
-        assert idx >= 0 && idx < tasks.size() : "A parsed task index must be valid";
-        Task task = tasks.get(idx);
+    private void markTask(int taskIndex) {
+        assert taskIndex >= 0 && taskIndex < tasks.size() : "A parsed task index must be valid";
+        Task task = tasks.get(taskIndex);
         boolean wasDone = task.isDone();
-        tasks.mark(idx);
+        tasks.mark(taskIndex);
         assert task.isDone() : "Marking a task must set its completion state";
         if (!saveTasks()) {
             if (wasDone) {
-                tasks.mark(idx);
+                tasks.mark(taskIndex);
             } else {
-                tasks.unmark(idx);
+                tasks.unmark(taskIndex);
             }
             assert task.isDone() == wasDone
                     : "A failed mark must restore the previous completion state";
@@ -131,17 +131,17 @@ public class Cookie {
     }
 
     /** Marks a task as not done and prints a message indicating the successful update. */
-    private void unmarkTask(int idx) {
-        assert idx >= 0 && idx < tasks.size() : "A parsed task index must be valid";
-        Task task = tasks.get(idx);
+    private void unmarkTask(int taskIndex) {
+        assert taskIndex >= 0 && taskIndex < tasks.size() : "A parsed task index must be valid";
+        Task task = tasks.get(taskIndex);
         boolean wasDone = task.isDone();
-        tasks.unmark(idx);
+        tasks.unmark(taskIndex);
         assert !task.isDone() : "Unmarking a task must clear its completion state";
         if (!saveTasks()) {
             if (wasDone) {
-                tasks.mark(idx);
+                tasks.mark(taskIndex);
             } else {
-                tasks.unmark(idx);
+                tasks.unmark(taskIndex);
             }
             assert task.isDone() == wasDone
                     : "A failed unmark must restore the previous completion state";
@@ -151,15 +151,15 @@ public class Cookie {
     }
 
     /** Deletes the selected task and reports the removed task and remaining task count. */
-    private void deleteTask(int idx) {
-        assert idx >= 0 && idx < tasks.size() : "A parsed task index must be valid";
+    private void deleteTask(int taskIndex) {
+        assert taskIndex >= 0 && taskIndex < tasks.size() : "A parsed task index must be valid";
         int previousTaskCount = tasks.size();
-        Task task = tasks.delete(idx);
+        Task task = tasks.delete(taskIndex);
         assert tasks.size() == previousTaskCount - 1
                 : "Deleting a task must reduce the task count by one";
         if (!saveTasks()) {
-            tasks.add(idx, task);
-            assert tasks.get(idx) == task : "A failed deletion must restore the deleted task";
+            tasks.add(taskIndex, task);
+            assert tasks.get(taskIndex) == task : "A failed deletion must restore the deleted task";
             assert tasks.size() == previousTaskCount
                     : "A failed deletion must restore the previous task count";
             return;

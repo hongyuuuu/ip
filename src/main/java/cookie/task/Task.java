@@ -4,11 +4,17 @@ import java.time.LocalDate;
 
 /** Serves as a template for more specific task types. */
 public abstract class Task {
+    /** The status text used when persisting a completed task. */
+    private static final String DONE_STATUS = "Done";
+
+    /** The status text used when persisting an incomplete task. */
+    private static final String NOT_DONE_STATUS = "Not Done";
+
     /** The task description. */
-    protected String description;
+    private final String description;
 
     /** Whether or not the task has been completed. */
-    protected boolean isDone;
+    private boolean isDone;
 
     /**
      * Creates an incomplete task with the specified description.
@@ -89,6 +95,12 @@ public abstract class Task {
      * @return The task's storage representation.
      */
     public abstract String toFileFormat();
+
+    /** Returns the shared storage fields for a task of the specified type. */
+    protected String formatForStorage(TaskType taskType) {
+        String status = isDone ? DONE_STATUS : NOT_DONE_STATUS;
+        return taskType.getCode() + " | " + status + " | " + description;
+    }
 
     /** Returns the task's checkbox and description. */
     @Override

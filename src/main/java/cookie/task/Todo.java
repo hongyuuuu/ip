@@ -19,7 +19,7 @@ public class Todo extends Task {
      */
     @Override
     public String toFileFormat() {
-        return "T | " + (this.isDone ? "Done | " : "Not Done | ") + this.description;
+        return formatForStorage(TaskType.TODO);
     }
 
     /**
