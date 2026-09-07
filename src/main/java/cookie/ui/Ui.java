@@ -4,6 +4,9 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Locale;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 import cookie.command.CookieException;
 import cookie.task.Task;
@@ -72,12 +75,9 @@ public class Ui {
      * @param tasks The tasks to display.
      */
     public void showTaskList(TaskList tasks) {
-        StringBuilder message = new StringBuilder("Here are the task(s) in your list:");
-        for (int taskIndex = 0; taskIndex < tasks.size(); taskIndex++) {
-            Task task = tasks.get(taskIndex);
-            message.append(System.lineSeparator()).append(taskIndex + 1).append(". ").append(task);
-        }
-        show(message.toString());
+        Stream<TaskList.IndexedTask> indexedTasks = IntStream.range(0, tasks.size())
+                .mapToObj(index -> new TaskList.IndexedTask(index + 1, tasks.get(index)));
+        show("Here are the task(s) in your list:" + formatTaskLines(indexedTasks));
     }
 
     /**
@@ -145,7 +145,9 @@ public class Ui {
      */
     public void showMalformedRecords(List<Integer> lineNumbers) {
         String noun = lineNumbers.size() == 1 ? "line" : "lines";
-        String numbers = String.join(", ", lineNumbers.stream().map(String::valueOf).toList());
+        String numbers = lineNumbers.stream()
+                .map(String::valueOf)
+                .collect(Collectors.joining(", "));
         show("Heads up! I skipped malformed saved task records on " + noun + " " + numbers
                 + ". Your valid tasks were still loaded.");
     }
@@ -157,23 +159,26 @@ public class Ui {
      * @param matchingTasks The matching tasks and their original task numbers.
      */
     public void showTasksOnDate(LocalDate date, List<TaskList.IndexedTask> matchingTasks) {
-        StringBuilder message = new StringBuilder("Here are the task(s) on ")
-                .append(date.format(DISPLAY_DATE_FORMAT)).append(":");
-        for (TaskList.IndexedTask matchingTask : matchingTasks) {
-            message.append(System.lineSeparator()).append(matchingTask.taskNumber())
-                    .append(". ").append(matchingTask.task());
-        }
-        show(message.toString());
+        show("Here are the task(s) on " + date.format(DISPLAY_DATE_FORMAT) + ":"
+                + formatTaskLines(matchingTasks.stream()));
     }
 
     /** Displays tasks whose descriptions contain the requested keyword. */
     public void showMatchingTasks(List<TaskList.IndexedTask> matchingTasks) {
-        StringBuilder message = new StringBuilder("Here are the matching tasks in your list:");
-        for (TaskList.IndexedTask matchingTask : matchingTasks) {
-            message.append(System.lineSeparator()).append(matchingTask.taskNumber())
-                    .append(". ").append(matchingTask.task());
-        }
-        show(message.toString());
+        show("Here are the matching tasks in your list:" + formatTaskLines(matchingTasks.stream()));
+    }
+
+    /**
+     * Formats indexed tasks as display lines, including a leading line separator when nonempty.
+     *
+     * @param indexedTasks The indexed tasks to format.
+     * @return The formatted task lines, or an empty string if there are no tasks.
+     */
+    private String formatTaskLines(Stream<TaskList.IndexedTask> indexedTasks) {
+        String taskLines = indexedTasks
+                .map(indexedTask -> indexedTask.taskNumber() + ". " + indexedTask.task())
+                .collect(Collectors.joining(System.lineSeparator()));
+        return taskLines.isEmpty() ? "" : System.lineSeparator() + taskLines;
     }
 
     /** Sends a formatted message to the configured output. */
