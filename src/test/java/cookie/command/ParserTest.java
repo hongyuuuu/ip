@@ -11,6 +11,8 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 
 import cookie.task.DateTimeValue;
+import cookie.task.SortCriterion;
+import cookie.task.SortDirection;
 
 /** Tests command parsing, validation, and date/time conversion. */
 public class ParserTest {
@@ -103,6 +105,28 @@ public class ParserTest {
     public void parseDate_invalidValue_throwsCookieException() {
         CookieException exception = assertThrows(CookieException.class, () -> parser.parseDate("2026-02-30"));
         assertEquals("A date must use yyyy-MM-dd or d/M/yyyy.", exception.getMessage());
+    }
+
+    @Test
+    public void parseSort_supportedArguments_returnsCriterionAndDirection() throws CookieException {
+        Parser.ParsedSort defaultDirection = parser.parseSort(parser.parse("sort description"));
+        Parser.ParsedSort explicitDirection = parser.parseSort(parser.parse("sort DATE DeSc"));
+
+        assertEquals(SortCriterion.DESCRIPTION, defaultDirection.criterion());
+        assertEquals(SortDirection.ASCENDING, defaultDirection.direction());
+        assertEquals(SortCriterion.DATE, explicitDirection.criterion());
+        assertEquals(SortDirection.DESCENDING, explicitDirection.direction());
+    }
+
+    @Test
+    public void parseSort_invalidArguments_throwsUsageError() {
+        for (String invalidCommand : new String[] {
+            "sort", "sort status", "sort date descending", "sort date asc extra"
+        }) {
+            CookieException exception = assertThrows(CookieException.class, () ->
+                    parser.parseSort(parser.parse(invalidCommand)));
+            assertEquals("Usage: sort <description|date> [asc|desc].", exception.getMessage());
+        }
     }
 
     @Test

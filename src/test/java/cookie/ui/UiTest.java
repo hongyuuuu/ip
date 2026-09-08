@@ -13,6 +13,8 @@ import cookie.command.CookieException;
 import cookie.task.DateTimeValue;
 import cookie.task.Deadline;
 import cookie.task.Event;
+import cookie.task.SortCriterion;
+import cookie.task.SortDirection;
 import cookie.task.TaskList;
 import cookie.task.Todo;
 
@@ -94,6 +96,24 @@ public class UiTest {
         assertTrue(printed.contains("1. [T][ ] read book"));
         assertTrue(printed.contains("2. [D][ ] return book"));
         assertTrue(!printed.contains("buy groceries"));
+    }
+
+    @Test
+    public void showSortedTasks_printsCriterionDirectionAndOriginalNumbers() {
+        Ui ui = new Ui(replyCollector);
+        Todo firstTask = new Todo("zebra");
+        Todo secondTask = new Todo("apple");
+        List<TaskList.IndexedTask> sortedTasks = List.of(
+                new TaskList.IndexedTask(2, secondTask),
+                new TaskList.IndexedTask(1, firstTask));
+
+        ui.showSortedTasks(sortedTasks, SortCriterion.DESCRIPTION, SortDirection.ASCENDING);
+
+        assertEquals("Here are the task(s) sorted by description (ascending):"
+                + System.lineSeparator()
+                + "2. [T][ ] apple"
+                + System.lineSeparator()
+                + "1. [T][ ] zebra", replyCollector.getReply());
     }
 
     @Test

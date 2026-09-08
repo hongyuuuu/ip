@@ -87,6 +87,68 @@ public class TaskListTest {
                 .toList());
     }
 
+    @Test
+    public void getSortedView_descriptionSort_preservesNumbersTiesAndStoredOrder() {
+        TaskList tasks = new TaskList(
+                new Todo("zebra"),
+                new Todo("apple"),
+                new Todo("Apple"),
+                new Todo("banana"));
+
+        List<TaskList.IndexedTask> ascending = tasks.getSortedView(
+                SortCriterion.DESCRIPTION, SortDirection.ASCENDING);
+        List<TaskList.IndexedTask> descending = tasks.getSortedView(
+                SortCriterion.DESCRIPTION, SortDirection.DESCENDING);
+
+        assertEquals(List.of(2, 3, 4, 1), taskNumbersOf(ascending));
+        assertEquals(List.of(1, 4, 2, 3), taskNumbersOf(descending));
+        assertEquals(List.of("zebra", "apple", "Apple", "banana"), toList(tasks).stream()
+                .map(Task::getDescription)
+                .toList());
+    }
+
+    @Test
+    public void getSortedView_dateSort_ordersValueShapesAndKeepsMissingValuesLast() {
+        LocalDate earlierDate = LocalDate.of(2026, 8, 27);
+        LocalDate laterDate = LocalDate.of(2026, 8, 28);
+        TaskList tasks = new TaskList(
+                new Todo("first todo"),
+                new Deadline("later deadline", new DateTimeValue(laterDate, LocalTime.of(9, 0))),
+                new Event("earlier event",
+                        new DateTimeValue(earlierDate, LocalTime.of(9, 0)),
+                        new DateTimeValue(earlierDate, LocalTime.of(10, 0))),
+                new Deadline("date-only deadline", new DateTimeValue(earlierDate, null)),
+                new Deadline("evening deadline", new DateTimeValue(null, LocalTime.of(18, 0))),
+                new Event("morning event",
+                        new DateTimeValue(null, LocalTime.of(9, 0)),
+                        new DateTimeValue(null, LocalTime.of(10, 0))),
+                new Todo("second todo"));
+
+        List<TaskList.IndexedTask> ascending = tasks.getSortedView(
+                SortCriterion.DATE, SortDirection.ASCENDING);
+        List<TaskList.IndexedTask> descending = tasks.getSortedView(
+                SortCriterion.DATE, SortDirection.DESCENDING);
+
+        assertEquals(List.of(4, 3, 2, 6, 5, 1, 7), taskNumbersOf(ascending));
+        assertEquals(List.of(2, 3, 4, 5, 6, 1, 7), taskNumbersOf(descending));
+    }
+
+    @Test
+    public void getSortedView_invalidArguments_triggerAssertionErrors() {
+        TaskList tasks = new TaskList(new Todo("task"));
+
+        assertThrows(AssertionError.class, () ->
+                tasks.getSortedView(null, SortDirection.ASCENDING));
+        assertThrows(AssertionError.class, () ->
+                tasks.getSortedView(SortCriterion.DESCRIPTION, null));
+    }
+
+    private List<Integer> taskNumbersOf(List<TaskList.IndexedTask> indexedTasks) {
+        return indexedTasks.stream()
+                .map(TaskList.IndexedTask::taskNumber)
+                .toList();
+    }
+
     private List<Task> toList(TaskList tasks) {
         List<Task> result = new ArrayList<>();
         for (Task task : tasks) {

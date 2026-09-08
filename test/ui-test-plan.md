@@ -3,7 +3,7 @@
 Run these tests from the repository root with Java 25. Compile the current source before running the plan:
 
 ```text
-javac -encoding UTF-8 -d out src/main/java/cookie/Cookie.java src/main/java/cookie/command/*.java src/main/java/cookie/task/*.java src/main/java/cookie/storage/*.java src/main/java/cookie/ui/*.java
+javac -encoding UTF-8 -d out src/main/java/cookie/Cookie.java src/main/java/cookie/command/*.java src/main/java/cookie/task/*.java src/main/java/cookie/storage/*.java src/main/java/cookie/ui/ConsoleOutput.java src/main/java/cookie/ui/Output.java src/main/java/cookie/ui/ReplyCollector.java src/main/java/cookie/ui/Ui.java
 ```
 
 Each test case starts a fresh program process. The command is the program-launch command; the fenced input block is sent to standard input exactly as written.
@@ -17,8 +17,9 @@ Each test case starts a fresh program process. The command is the program-launch
 | Completion state | 4--5, 25 | 11, 15--17, 22 |
 | Deadline and event | 6--7, 33--35, 38--39 | 10, 18, 23--24, 36--37 |
 | Find | 39 | 40 |
+| Sorting | 41--42, 44 | 43 |
 | Deletion | 19 | 20--22 |
-| Persistence | 2, 4--7, 19, 25, 27, 32--34 | 28--31 |
+| Persistence | 2, 4--7, 19, 25, 27, 32--34, 41 | 28--31 |
 | Startup and file errors | 28, 31--32 | 29--30 |
 
 The expected output in every case is compared exactly, including spaces and separators.
@@ -1710,6 +1711,241 @@ Bruh... Usage: find <keyword>.
 ____________________________________________________________
 ____________________________________________________________
 Here are the task(s) in your list:
+____________________________________________________________
+____________________________________________________________
+Bye. I'm going to sleep.
+____________________________________________________________
+```
+
+## Test case 41: Sort descriptions without changing stored order
+
+**Aim:** Verify that description sorting is case-insensitive, preserves original task numbers, allows a displayed task number to be marked, and does not persist the sorted order.
+
+**Saved data:**
+```text
+T | Not Done | zebra
+T | Not Done | apple
+T | Not Done | Banana
+```
+
+**Command:** `java "-Dfile.encoding=UTF-8" "-Dstdout.encoding=UTF-8" -cp out cookie.Cookie`
+
+**Inputs:**
+```text
+sort description
+mark 2
+list
+bye
+```
+
+**Expected output:**
+```text
+____________________________________________________________
+ ██████╗ ██████╗  ██████╗ ██╗  ██╗██╗███████╗
+██╔════╝██╔═══██╗██╔═══██╗██║ ██╔╝██║██╔════╝
+██║     ██║   ██║██║   ██║█████╔╝ ██║█████╗  
+██║     ██║   ██║██║   ██║██╔═██╗ ██║██╔══╝  
+╚██████╗╚██████╔╝╚██████╔╝██║  ██╗██║███████╗
+ ╚═════╝ ╚═════╝  ╚═════╝ ╚═╝  ╚═╝╚═╝╚══════╝
+Hello! I'm your favourite chatbot Cookie.
+What do you need today?
+____________________________________________________________
+____________________________________________________________
+Here are the task(s) sorted by description (ascending):
+2. [T][ ] apple
+3. [T][ ] Banana
+1. [T][ ] zebra
+____________________________________________________________
+____________________________________________________________
+Wow you actually got work done...
+   [T][X] apple
+____________________________________________________________
+____________________________________________________________
+Here are the task(s) in your list:
+1. [T][ ] zebra
+2. [T][X] apple
+3. [T][ ] Banana
+____________________________________________________________
+____________________________________________________________
+Bye. I'm going to sleep.
+____________________________________________________________
+```
+
+**Restart inputs:**
+```text
+list
+bye
+```
+
+**Expected restart output:**
+```text
+____________________________________________________________
+ ██████╗ ██████╗  ██████╗ ██╗  ██╗██╗███████╗
+██╔════╝██╔═══██╗██╔═══██╗██║ ██╔╝██║██╔════╝
+██║     ██║   ██║██║   ██║█████╔╝ ██║█████╗  
+██║     ██║   ██║██║   ██║██╔═██╗ ██║██╔══╝  
+╚██████╗╚██████╔╝╚██████╔╝██║  ██╗██║███████╗
+ ╚═════╝ ╚═════╝  ╚═════╝ ╚═╝  ╚═╝╚═╝╚══════╝
+Hello! I'm your favourite chatbot Cookie.
+What do you need today?
+____________________________________________________________
+____________________________________________________________
+Here are the task(s) in your list:
+1. [T][ ] zebra
+2. [T][X] apple
+3. [T][ ] Banana
+____________________________________________________________
+____________________________________________________________
+Bye. I'm going to sleep.
+____________________________________________________________
+```
+
+## Test case 42: Sort mixed temporal values in both directions
+
+**Aim:** Verify that date sorting compares deadline due values and event start values, groups dated, time-only, and undated tasks, and keeps original task numbers.
+
+**Saved data:**
+```text
+T | Not Done | undated
+D | Not Done | earlier deadline | 2019-12-06
+E | Not Done | later event | 2019-12-07T09:00 to 2019-12-07T10:00
+D | Not Done | evening deadline | 18:00
+E | Not Done | morning event | 09:00 to 10:00
+```
+
+**Command:** `java "-Dfile.encoding=UTF-8" "-Dstdout.encoding=UTF-8" -cp out cookie.Cookie`
+
+**Inputs:**
+```text
+sort date
+sort date desc
+bye
+```
+
+**Expected output:**
+```text
+____________________________________________________________
+ ██████╗ ██████╗  ██████╗ ██╗  ██╗██╗███████╗
+██╔════╝██╔═══██╗██╔═══██╗██║ ██╔╝██║██╔════╝
+██║     ██║   ██║██║   ██║█████╔╝ ██║█████╗  
+██║     ██║   ██║██║   ██║██╔═██╗ ██║██╔══╝  
+╚██████╗╚██████╔╝╚██████╔╝██║  ██╗██║███████╗
+ ╚═════╝ ╚═════╝  ╚═════╝ ╚═╝  ╚═╝╚═╝╚══════╝
+Hello! I'm your favourite chatbot Cookie.
+What do you need today?
+____________________________________________________________
+____________________________________________________________
+Here are the task(s) sorted by date (ascending):
+2. [D][ ] earlier deadline (by: Dec 06 2019)
+3. [E][ ] later event (from: Dec 07 2019, 9:00 AM to: Dec 07 2019, 10:00 AM)
+5. [E][ ] morning event (from: 9:00 AM to: 10:00 AM)
+4. [D][ ] evening deadline (by: 6:00 PM)
+1. [T][ ] undated
+____________________________________________________________
+____________________________________________________________
+Here are the task(s) sorted by date (descending):
+3. [E][ ] later event (from: Dec 07 2019, 9:00 AM to: Dec 07 2019, 10:00 AM)
+2. [D][ ] earlier deadline (by: Dec 06 2019)
+4. [D][ ] evening deadline (by: 6:00 PM)
+5. [E][ ] morning event (from: 9:00 AM to: 10:00 AM)
+1. [T][ ] undated
+____________________________________________________________
+____________________________________________________________
+Bye. I'm going to sleep.
+____________________________________________________________
+```
+
+## Test case 43: Reject invalid sort arguments
+
+**Aim:** Verify that missing, unsupported, and extra sort arguments report the command usage without changing the stored task list.
+
+**Saved data:**
+```text
+T | Not Done | keep task
+```
+
+**Command:** `java "-Dfile.encoding=UTF-8" "-Dstdout.encoding=UTF-8" -cp out cookie.Cookie`
+
+**Inputs:**
+```text
+sort
+sort status
+sort date descending
+sort description asc extra
+list
+bye
+```
+
+**Expected output:**
+```text
+____________________________________________________________
+ ██████╗ ██████╗  ██████╗ ██╗  ██╗██╗███████╗
+██╔════╝██╔═══██╗██╔═══██╗██║ ██╔╝██║██╔════╝
+██║     ██║   ██║██║   ██║█████╔╝ ██║█████╗  
+██║     ██║   ██║██║   ██║██╔═██╗ ██║██╔══╝  
+╚██████╗╚██████╔╝╚██████╔╝██║  ██╗██║███████╗
+ ╚═════╝ ╚═════╝  ╚═════╝ ╚═╝  ╚═╝╚═╝╚══════╝
+Hello! I'm your favourite chatbot Cookie.
+What do you need today?
+____________________________________________________________
+____________________________________________________________
+Bruh... Usage: sort <description|date> [asc|desc].
+____________________________________________________________
+____________________________________________________________
+Bruh... Usage: sort <description|date> [asc|desc].
+____________________________________________________________
+____________________________________________________________
+Bruh... Usage: sort <description|date> [asc|desc].
+____________________________________________________________
+____________________________________________________________
+Bruh... Usage: sort <description|date> [asc|desc].
+____________________________________________________________
+____________________________________________________________
+Here are the task(s) in your list:
+1. [T][ ] keep task
+____________________________________________________________
+____________________________________________________________
+Bye. I'm going to sleep.
+____________________________________________________________
+```
+
+## Test case 44: Sort empty and single-item lists
+
+**Aim:** Verify that sorting an empty list and a single-item list succeeds, including case-insensitive criterion and direction arguments.
+
+**Command:** `java "-Dfile.encoding=UTF-8" "-Dstdout.encoding=UTF-8" -cp out cookie.Cookie`
+
+**Inputs:**
+```text
+sort description
+todo only task
+SoRt DeScRiPtIoN DeSc
+bye
+```
+
+**Expected output:**
+```text
+____________________________________________________________
+ ██████╗ ██████╗  ██████╗ ██╗  ██╗██╗███████╗
+██╔════╝██╔═══██╗██╔═══██╗██║ ██╔╝██║██╔════╝
+██║     ██║   ██║██║   ██║█████╔╝ ██║█████╗  
+██║     ██║   ██║██║   ██║██╔═██╗ ██║██╔══╝  
+╚██████╗╚██████╔╝╚██████╔╝██║  ██╗██║███████╗
+ ╚═════╝ ╚═════╝  ╚═════╝ ╚═╝  ╚═╝╚═╝╚══════╝
+Hello! I'm your favourite chatbot Cookie.
+What do you need today?
+____________________________________________________________
+____________________________________________________________
+Here are the task(s) sorted by description (ascending):
+____________________________________________________________
+____________________________________________________________
+Ok. I've added this task:
+   [T][ ] only task
+You have 1 task(s) now. Better start working.
+____________________________________________________________
+____________________________________________________________
+Here are the task(s) sorted by description (descending):
+1. [T][ ] only task
 ____________________________________________________________
 ____________________________________________________________
 Bye. I'm going to sleep.

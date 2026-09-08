@@ -16,6 +16,8 @@ public enum Command {
     ON,
     /** Finds tasks whose descriptions contain a specified keyword. */
     FIND,
+    /** Displays tasks in a temporary sorted view. */
+    SORT,
     /** Creates a todo task. */
     TODO,
     /** Creates a deadline task. */

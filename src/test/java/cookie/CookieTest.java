@@ -46,4 +46,25 @@ public class CookieTest {
         assertTrue(cookie.getResponse("list").contains("1. [T][ ] valid task"));
         assertEquals(savedLines, Files.readAllLines(dataFile));
     }
+
+    @Test
+    public void getResponse_sortDescription_displaysTemporaryViewAndPreservesStoredNumbers()
+            throws IOException {
+        Path dataFile = temporaryDirectory.resolve("cookie.txt");
+        Cookie cookie = new Cookie(dataFile.toString(), false);
+        cookie.getResponse("todo zebra");
+        cookie.getResponse("todo apple");
+        List<String> linesBeforeSort = Files.readAllLines(dataFile);
+
+        String sortResponse = cookie.getResponse("sort description");
+
+        assertTrue(sortResponse.indexOf("2. [T][ ] apple")
+                < sortResponse.indexOf("1. [T][ ] zebra"));
+        assertEquals(linesBeforeSort, Files.readAllLines(dataFile));
+
+        cookie.getResponse("mark 2");
+        String listResponse = cookie.getResponse("list");
+        assertTrue(listResponse.indexOf("1. [T][ ] zebra")
+                < listResponse.indexOf("2. [T][X] apple"));
+    }
 }
