@@ -1,6 +1,7 @@
 # Cookie project template
 
 This is a project template for a greenfield Java project named _Cookie_. Given below are instructions on how to use it.
+See the [Cookie User Guide](docs/README.md) for the available task commands.
 
 ## Setting up in Intellij
 

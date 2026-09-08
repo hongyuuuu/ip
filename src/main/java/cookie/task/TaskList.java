@@ -1,7 +1,9 @@
 package cookie.task;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.function.Predicate;
@@ -9,6 +11,20 @@ import java.util.stream.IntStream;
 
 /** Owns the ordered collection of tasks managed by Cookie. */
 public class TaskList implements Iterable<Task> {
+    /** Classifies temporal task values so values of different shapes remain comparable. */
+    private enum TemporalValueType {
+        /** A value containing a calendar date, with or without a time. */
+        DATED,
+        /** A value containing only a time of day. */
+        TIME_ONLY,
+        /** A task without a temporal value. */
+        NONE
+    }
+
+    /** Holds the normalized temporal value used when sorting a task. */
+    private record TemporalSortKey(TemporalValueType type, LocalDate date, LocalTime time) {
+    }
+
     /** Associates a matching task with its one-based number in the full task list. */
     public record IndexedTask(int taskNumber, Task task) {
         /** Creates a valid one-based task reference. */
@@ -128,6 +144,86 @@ public class TaskList implements Iterable<Task> {
      */
     public List<IndexedTask> findOn(LocalDate date) {
         return findMatching(task -> task.occursOn(date));
+    }
+
+    /**
+     * Returns a sorted snapshot of all tasks while preserving their original task numbers.
+     *
+     * <p>Date sorting compares deadlines by due value and events by start value. Tasks with
+     * calendar dates precede time-only tasks, which precede tasks without temporal values.
+     *
+     * @param criterion The task property to compare.
+     * @param direction The direction in which comparable values should appear.
+     * @return An immutable sorted view containing original one-based task numbers.
+     */
+    public List<IndexedTask> getSortedView(SortCriterion criterion, SortDirection direction) {
+        assert criterion != null : "A sort criterion must not be null";
+        assert direction != null : "A sort direction must not be null";
+
+        List<IndexedTask> indexedTasks = IntStream.range(0, tasks.size())
+                .mapToObj(index -> new IndexedTask(index + 1, tasks.get(index)))
+                .collect(ArrayList::new, ArrayList::add, ArrayList::addAll);
+        Comparator<IndexedTask> comparator = switch (criterion) {
+            case DESCRIPTION -> createDescriptionComparator(direction);
+            case DATE -> createDateComparator(direction);
+        };
+        indexedTasks.sort(comparator);
+        return List.copyOf(indexedTasks);
+    }
+
+    /** Creates a stable, case-insensitive comparator for task descriptions. */
+    private Comparator<IndexedTask> createDescriptionComparator(SortDirection direction) {
+        Comparator<IndexedTask> comparator = Comparator.comparing(
+                indexedTask -> indexedTask.task().getDescription(),
+                String.CASE_INSENSITIVE_ORDER);
+        return direction == SortDirection.ASCENDING ? comparator : comparator.reversed();
+    }
+
+    /** Creates a comparator that keeps missing temporal value groups last in either direction. */
+    private Comparator<IndexedTask> createDateComparator(SortDirection direction) {
+        return (first, second) -> compareTemporalKeys(
+                createTemporalSortKey(first.task()),
+                createTemporalSortKey(second.task()),
+                direction);
+    }
+
+    /** Returns a normalized temporal sort key for a deadline, event, or undated task. */
+    private TemporalSortKey createTemporalSortKey(Task task) {
+        DateTimeValue value;
+        if (task instanceof Deadline deadline) {
+            value = deadline.getBy();
+        } else if (task instanceof Event event) {
+            value = event.getStart();
+        } else {
+            return new TemporalSortKey(TemporalValueType.NONE, null, null);
+        }
+
+        if (value.getDate() != null) {
+            LocalTime normalizedTime = value.getTime() == null ? LocalTime.MIN : value.getTime();
+            return new TemporalSortKey(TemporalValueType.DATED, value.getDate(), normalizedTime);
+        }
+        return new TemporalSortKey(TemporalValueType.TIME_ONLY, null, value.getTime());
+    }
+
+    /** Compares normalized temporal keys without reversing their group priority. */
+    private int compareTemporalKeys(TemporalSortKey first, TemporalSortKey second,
+                                    SortDirection direction) {
+        int typeComparison = first.type().compareTo(second.type());
+        if (typeComparison != 0) {
+            return typeComparison;
+        }
+
+        int valueComparison = switch (first.type()) {
+            case DATED -> {
+                int dateComparison = first.date().compareTo(second.date());
+                yield dateComparison != 0
+                        ? dateComparison
+                        : first.time().compareTo(second.time());
+            }
+            case TIME_ONLY -> first.time().compareTo(second.time());
+            case NONE -> 0;
+        };
+        return direction == SortDirection.ASCENDING ? valueComparison : -valueComparison;
     }
 
     /**

@@ -10,6 +10,8 @@ import cookie.command.Parser;
 import cookie.storage.Storage;
 import cookie.task.Deadline;
 import cookie.task.Event;
+import cookie.task.SortCriterion;
+import cookie.task.SortDirection;
 import cookie.task.Task;
 import cookie.task.TaskList;
 import cookie.task.Todo;
@@ -190,6 +192,11 @@ public class Cookie {
         ui.showMatchingTasks(tasks.find(keyword));
     }
 
+    /** Displays all tasks in a temporary sorted view without changing their stored order. */
+    private void sortTasks(SortCriterion criterion, SortDirection direction) {
+        ui.showSortedTasks(tasks.getSortedView(criterion, direction), criterion, direction);
+    }
+
     /** Saves the current task list to the data file and reports whether it succeeded. */
     private boolean saveTasks() {
         try {
@@ -275,6 +282,10 @@ public class Cookie {
             case FIND -> {
                 parser.requireSingleArgument(parsedCommand, "find <keyword>");
                 findTasks(parsedCommand.argument(0));
+            }
+            case SORT -> {
+                Parser.ParsedSort parsedSort = parser.parseSort(parsedCommand);
+                sortTasks(parsedSort.criterion(), parsedSort.direction());
             }
             case TODO -> addTask(new Todo(
                     parser.requireFileSafe(parser.requireDescription(parsedCommand))));

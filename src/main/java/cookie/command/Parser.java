@@ -10,9 +10,14 @@ import java.util.List;
 import java.util.Locale;
 
 import cookie.task.DateTimeValue;
+import cookie.task.SortCriterion;
+import cookie.task.SortDirection;
 
 /** Interprets the command structure of user input for Cookie. */
 public class Parser {
+    /** Describes the accepted arguments for the sort command. */
+    private static final String SORT_USAGE = "sort <description|date> [asc|desc]";
+
     /** Parses date and time values that use the ISO date format. */
     private static final DateTimeFormatter ISO_DATE_TIME_INPUT_FORMAT =
             DateTimeFormatter.ofPattern("uuuu-MM-dd HHmm", Locale.ENGLISH)
@@ -180,6 +185,40 @@ public class Parser {
     }
 
     /**
+     * Parses the criterion and optional direction supplied for a sorted task view.
+     *
+     * @param command The parsed sort command.
+     * @return The validated sort criterion and direction.
+     * @throws CookieException If the sort arguments do not use the supported syntax.
+     */
+    public ParsedSort parseSort(ParsedCommand command) throws CookieException {
+        if (command.argumentCount() < 1 || command.argumentCount() > 2) {
+            throw createSortUsageException();
+        }
+
+        SortCriterion criterion = switch (command.argument(0).toLowerCase(Locale.ROOT)) {
+            case "description" -> SortCriterion.DESCRIPTION;
+            case "date" -> SortCriterion.DATE;
+            default -> throw createSortUsageException();
+        };
+
+        SortDirection direction = SortDirection.ASCENDING;
+        if (command.argumentCount() == 2) {
+            direction = switch (command.argument(1).toLowerCase(Locale.ROOT)) {
+                case "asc" -> SortDirection.ASCENDING;
+                case "desc" -> SortDirection.DESCENDING;
+                default -> throw createSortUsageException();
+            };
+        }
+        return new ParsedSort(criterion, direction);
+    }
+
+    /** Creates the standard usage error for malformed sort commands. */
+    private CookieException createSortUsageException() {
+        return new CookieException("Usage: " + SORT_USAGE + ".");
+    }
+
+    /**
      * Parses the description and date or time supplied for a deadline.
      *
      * @param description The raw description and deadline value to parse.
@@ -326,5 +365,14 @@ public class Parser {
      * @param end The parsed event end date or time.
      */
     public record ParsedEvent(String description, DateTimeValue start, DateTimeValue end) {
+    }
+
+    /**
+     * Holds the validated settings for a temporary sorted task view.
+     *
+     * @param criterion The task property to compare.
+     * @param direction The direction in which comparable values should appear.
+     */
+    public record ParsedSort(SortCriterion criterion, SortDirection direction) {
     }
 }

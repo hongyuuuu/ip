@@ -9,6 +9,8 @@ import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import cookie.command.CookieException;
+import cookie.task.SortCriterion;
+import cookie.task.SortDirection;
 import cookie.task.Task;
 import cookie.task.TaskList;
 
@@ -166,6 +168,21 @@ public class Ui {
     /** Displays tasks whose descriptions contain the requested keyword. */
     public void showMatchingTasks(List<TaskList.IndexedTask> matchingTasks) {
         show("Here are the matching tasks in your list:" + formatTaskLines(matchingTasks.stream()));
+    }
+
+    /**
+     * Displays all tasks in a sorted view while retaining their original task numbers.
+     *
+     * @param sortedTasks The sorted tasks paired with their original task numbers.
+     * @param criterion The task property used for sorting.
+     * @param direction The direction used for sorting comparable values.
+     */
+    public void showSortedTasks(List<TaskList.IndexedTask> sortedTasks,
+                                SortCriterion criterion, SortDirection direction) {
+        String criterionLabel = criterion == SortCriterion.DESCRIPTION ? "description" : "date";
+        String directionLabel = direction == SortDirection.ASCENDING ? "ascending" : "descending";
+        show("Here are the task(s) sorted by " + criterionLabel + " (" + directionLabel + "):"
+                + formatTaskLines(sortedTasks.stream()));
     }
 
     /**
